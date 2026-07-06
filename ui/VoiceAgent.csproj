@@ -6,7 +6,7 @@
     <UseWPF>true</UseWPF>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <AssemblyName>VoiceAgent</AssemblyName>
+    <AssemblyName>VozPluma</AssemblyName>
     <RootNamespace>VoiceAgent</RootNamespace>
     <!-- ThemeMode (tema Fluent Win11) está marcado como experimental en .NET 9 -->
     <NoWarn>WPF0001</NoWarn>

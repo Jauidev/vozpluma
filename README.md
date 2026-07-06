@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="logo.png" alt="Agente de Voz" width="140" />
+  <img src="logo.png" alt="VozPluma" width="140" />
 </p>
 
-# Agente de Voz
+# VozPluma
 
 Dictado por voz **100% local** para Windows: habla y el texto se escribe solo en cualquier aplicación — chats, Word, el navegador, tu editor de código. Tu voz nunca sale de tu ordenador.
 
@@ -18,16 +18,16 @@ Dictado por voz **100% local** para Windows: habla y el texto se escribe solo en
 
 ## Instalación rápida (usuarios)
 
-1. Descarga `AgenteDeVoz-v1.0.zip` desde [Releases](../../releases) y descomprímelo
+1. Descarga `VozPluma-v1.0.zip` desde [Releases](../../releases) y descomprímelo
 2. Doble clic en `instalar.bat` — instala Python y las dependencias solo
    (si te dice que ha instalado Python, ciérralo y vuelve a ejecutarlo: solo pasa la primera vez)
-3. Abre `VoiceAgent.exe` — la primera vez descarga el modelo de voz (~1.5 GB)
+3. Abre `VozPluma.exe` — la primera vez descarga el modelo de voz (~1.5 GB)
 
 El paquete descomprimido queda así:
 
 ```
-AgenteDeVoz\
-├── VoiceAgent.exe      ← la aplicación (autocontenida, no necesita .NET)
+VozPluma\
+├── VozPluma.exe        ← la aplicación (autocontenida, no necesita .NET)
 ├── instalar.bat        ← ejecútalo primero, una sola vez
 ├── LEEME.txt           ← instrucciones y solución de problemas
 ├── engine.py, talk.py, transcribe.py
@@ -58,7 +58,7 @@ También puedes usar el motor sin interfaz gráfica:
 
 ```
 ┌─────────────────────┐   JSON por stdin/stdout   ┌──────────────────────┐
-│  VoiceAgent.exe     │ ◄───────────────────────► │  engine.py           │
+│  VozPluma.exe       │ ◄───────────────────────► │  engine.py           │
 │  C# WPF (Fluent)    │   rec / stop / quit       │  Python              │
 │  · ventana principal│   ready / listening /     │  · captura de audio  │
 │  · widget flotante  │   transcribing / text     │  · VAD por energía   │

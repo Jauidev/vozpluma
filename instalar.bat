@@ -4,7 +4,7 @@ setlocal
 cd /d "%~dp0"
 
 echo ============================================
-echo   Instalador del Agente de Voz
+echo   Instalador de VozPluma
 echo ============================================
 echo.
 
@@ -47,7 +47,7 @@ if errorlevel 1 goto :error
 echo.
 echo ============================================
 echo   Instalacion completada.
-echo   Abre VoiceAgent.exe para empezar.
+echo   Abre VozPluma.exe para empezar.
 echo   (la primera vez descargara el modelo de voz, ~1.5 GB)
 echo ============================================
 pause
