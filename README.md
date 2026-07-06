@@ -1,7 +1,5 @@
 # VozPluma
 
-https://github.com/Jauidev/vozpluma
-
 Dictado por voz **100% local** para Windows: habla y el texto se escribe solo en cualquier aplicación — chats, Word, el navegador, tu editor de código. Tu voz nunca sale de tu ordenador.
 
 ## Características
