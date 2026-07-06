@@ -70,6 +70,7 @@ También puedes usar el motor sin interfaz gráfica:
 
 ## Hoja de ruta
 
+- [ ] Aceleración en gráficas AMD e Intel (vía whisper.cpp/Vulkan o DirectML); hoy esas gráficas funcionan por CPU
 - [ ] Soporte para macOS y Linux (el motor Python ya es multiplataforma; falta portar la interfaz y la escritura en otras apps)
 - [ ] Respuestas habladas: conectar la transcripción a un LLM y leer la respuesta en voz alta
 
