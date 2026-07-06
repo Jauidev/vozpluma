@@ -1,0 +1,9 @@
+# Dependencias del Agente de Voz (Python 3.11+)
+# PyTorch se instala aparte con soporte CUDA — ver instalar.bat
+transformers>=5.13.0
+accelerate
+faster-whisper>=1.2
+librosa
+soundfile
+sounddevice
+numpy

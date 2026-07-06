@@ -1,0 +1,107 @@
+<ui:FluentWindow
+    x:Class="VoiceAgent.SettingsWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Title="Ajustes"
+    Width="480" Height="640" ResizeMode="NoResize"
+    WindowBackdropType="Mica"
+    ExtendsContentIntoTitleBar="True"
+    WindowCornerPreference="Round"
+    WindowStartupLocation="CenterOwner">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar Grid.Row="0" Title="Ajustes" ShowMaximize="False" ShowMinimize="False" />
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="24,4,24,8">
+
+                <!-- ================= GENERAL ================= -->
+                <TextBlock Text="General" FontSize="16" FontWeight="SemiBold"
+                           Margin="0,0,0,8" />
+                <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1" CornerRadius="8" Padding="16"
+                        Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="Micrófono" FontSize="12" Margin="0,0,0,4"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        <ComboBox x:Name="MicCombo" Margin="0,0,0,4" />
+                        <TextBlock Text="En automático se elige el primer micrófono real que funcione."
+                                   FontSize="11" TextWrapping="Wrap" Margin="0,0,0,14"
+                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+
+                        <CheckBox x:Name="EspacioCheck"
+                                  Content="Añadir un espacio tras cada frase dictada" />
+                        <TextBlock Text="Permite encadenar frases en el modo widget sin que se peguen."
+                                   FontSize="11" TextWrapping="Wrap" Margin="0,2,0,0"
+                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- ================= RENDIMIENTO ================= -->
+                <TextBlock Text="Rendimiento" FontSize="16" FontWeight="SemiBold"
+                           Margin="0,0,0,8" />
+                <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1" CornerRadius="8" Padding="16">
+                    <StackPanel>
+
+                        <Grid>
+                            <TextBlock Text="Corte por silencio" FontSize="13" />
+                            <TextBlock x:Name="SilencioValor" FontSize="13"
+                                       HorizontalAlignment="Right"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        </Grid>
+                        <Slider x:Name="SilencioSlider" Minimum="0.4" Maximum="2.0"
+                                TickFrequency="0.1" IsSnapToTickEnabled="True"
+                                ValueChanged="Slider_Changed" />
+                        <TextBlock Text="Pausa que da la frase por terminada. Más bajo = más rápido, pero puede cortarte entre palabras."
+                                   FontSize="11" TextWrapping="Wrap" Margin="0,2,0,16"
+                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+
+                        <Grid>
+                            <TextBlock Text="Espera de voz" FontSize="13" />
+                            <TextBlock x:Name="EsperaValor" FontSize="13"
+                                       HorizontalAlignment="Right"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        </Grid>
+                        <Slider x:Name="EsperaSlider" Minimum="5" Maximum="30"
+                                TickFrequency="1" IsSnapToTickEnabled="True"
+                                ValueChanged="Slider_Changed" />
+                        <TextBlock Text="Cuánto espera a que empieces a hablar antes de rendirse (en el modo continuo simplemente reintenta)."
+                                   FontSize="11" TextWrapping="Wrap" Margin="0,2,0,16"
+                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+
+                        <Grid>
+                            <TextBlock Text="Duración máxima de frase" FontSize="13" />
+                            <TextBlock x:Name="MaxSegValor" FontSize="13"
+                                       HorizontalAlignment="Right"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        </Grid>
+                        <Slider x:Name="MaxSegSlider" Minimum="15" Maximum="120"
+                                TickFrequency="5" IsSnapToTickEnabled="True"
+                                ValueChanged="Slider_Changed" />
+                        <TextBlock Text="Tope de grabación por frase aunque no haya silencio."
+                                   FontSize="11" TextWrapping="Wrap" Margin="0,2,0,0"
+                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right"
+                    Margin="24,8,24,20">
+            <ui:Button Content="Cancelar" Margin="0,0,8,0" Click="Cancelar_Click" />
+            <ui:Button Content="Guardar" Appearance="Primary" Click="Guardar_Click" />
+        </StackPanel>
+    </Grid>
+</ui:FluentWindow>

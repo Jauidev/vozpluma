@@ -1,0 +1,12 @@
+# Python
+.venv/
+__pycache__/
+
+# .NET
+ui/bin/
+ui/obj/
+
+# Distribución y artefactos locales
+dist/
+*.wav
+ajustes.json
