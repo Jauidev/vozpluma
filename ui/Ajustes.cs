@@ -9,6 +9,8 @@ public class Ajustes
     // --- General ---
     public int MicIndex { get; set; } = -1;        // -1 = automático
     public bool EspacioFinal { get; set; } = true; // espacio tras cada frase dictada
+    public string Idioma { get; set; } = "";       // "" = usar el idioma del sistema
+    public bool UsarWhisper { get; set; } = true;
 
     // --- Rendimiento ---
     public double SilencioFin { get; set; } = 0.9; // seg. de silencio que cortan la frase

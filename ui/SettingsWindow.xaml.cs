@@ -91,6 +91,9 @@ public partial class SettingsWindow
             SilencioFin = Math.Round(SilencioSlider.Value, 1),
             EsperaVoz = (int)EsperaSlider.Value,
             MaxSeg = (int)MaxSegSlider.Value,
+            // conserva lo elegido en la ventana principal
+            Idioma = Ajustes.Actual.Idioma,
+            UsarWhisper = Ajustes.Actual.UsarWhisper,
         }.Guardar();
         DialogResult = true;
     }

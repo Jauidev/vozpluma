@@ -24,9 +24,18 @@ public partial class MainWindow
         InitializeComponent();
         Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this);
 
-        foreach (var l in new[] { "es-ES", "en-US", "fr-FR", "de-DE", "it-IT", "pt-BR", "ar-SA" })
+        var idiomas = new[] { "es-ES", "en-US", "fr-FR", "de-DE", "it-IT", "pt-BR", "ar-SA" };
+        foreach (var l in idiomas)
             IdiomaCombo.Items.Add(l);
-        IdiomaCombo.SelectedIndex = 0;
+
+        // idioma guardado; si no hay, el del sistema; si no está soportado, inglés
+        var sistema = System.Globalization.CultureInfo.CurrentUICulture.Name;
+        IdiomaCombo.SelectedItem =
+            idiomas.FirstOrDefault(l => l == Ajustes.Actual.Idioma)
+            ?? idiomas.FirstOrDefault(l => l == sistema)
+            ?? idiomas.FirstOrDefault(l => l.StartsWith(sistema.Split('-')[0]))
+            ?? "en-US";
+        ModeloCombo.SelectedIndex = Ajustes.Actual.UsarWhisper ? 0 : 1;
 
         _pulso = (Storyboard)FindResource("Pulso");
 
@@ -219,6 +228,11 @@ public partial class MainWindow
     private void Selector_Changed(object sender, SelectionChangedEventArgs e)
     {
         if (!IsLoaded) return;
+        // recuerda la elección para la próxima sesión
+        var a = Ajustes.Actual;
+        a.Idioma = (string)IdiomaCombo.SelectedItem;
+        a.UsarWhisper = ModeloCombo.SelectedIndex == 0;
+        a.Guardar();
         PararMotor();
         IniciarMotor();
     }
