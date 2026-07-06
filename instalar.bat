@@ -47,7 +47,7 @@ if errorlevel 1 goto :error
 echo.
 echo ============================================
 echo   Instalacion completada.
-echo   Abre ui\VoiceAgent.exe para empezar.
+echo   Abre VoiceAgent.exe para empezar.
 echo   (la primera vez descargara el modelo de voz, ~1.5 GB)
 echo ============================================
 pause

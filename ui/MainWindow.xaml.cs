@@ -42,11 +42,14 @@ public partial class MainWindow
 
     internal static string RaizProyecto()
     {
-        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        // ProcessPath y no BaseDirectory: en publicación de archivo único,
+        // BaseDirectory apunta a una carpeta temporal de extracción
+        var origen = Path.GetDirectoryName(Environment.ProcessPath) ?? AppContext.BaseDirectory;
+        var dir = new DirectoryInfo(origen);
         while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "engine.py")))
             dir = dir.Parent;
         return dir?.FullName
-            ?? throw new FileNotFoundException("No se encontró engine.py subiendo desde " + AppContext.BaseDirectory);
+            ?? throw new FileNotFoundException("No se encontró engine.py subiendo desde " + origen);
     }
 
     private void IniciarMotor()
