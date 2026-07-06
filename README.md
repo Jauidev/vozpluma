@@ -9,7 +9,7 @@ Dictado por voz **100% local** para Windows: habla y el texto se escribe solo en
 - **Dictado continuo manos libres**: habla frase tras frase; detecta tus pausas y transcribe en paralelo mientras ya escucha la siguiente, con indicador de progreso
 - **7 idiomas**: español, inglés, francés, alemán, italiano, portugués y árabe
 - **Interfaz Windows 11** (WPF + tema Fluent con Mica) con ajustes separados de **General** (micrófono, comportamiento) y **Rendimiento** (corte por silencio, tiempos de espera)
-- **Funciona con o sin GPU**: usa tu tarjeta NVIDIA si la tienes; si no, cae automáticamente a CPU
+- **Funciona en cualquier PC**: con GPU NVIDIA va acelerado; sin ella (o con AMD/Intel) usa el procesador automáticamente
 - **Privado por diseño**: sin nube, sin cuentas, sin telemetría — internet solo para descargar los modelos la primera vez
 
 ## Instalación rápida (usuarios)
@@ -30,7 +30,7 @@ VozPluma\
 └── requirements.txt
 ```
 
-**Requisitos**: Windows 10/11 x64 · 8 GB RAM · GPU NVIDIA opcional (sin ella funciona por CPU, más lento)
+**Requisitos**: Windows 10/11 x64 · 8 GB RAM · No necesita gráfica: funciona en cualquier PC usando el procesador. Si tienes una **GPU NVIDIA**, la usa automáticamente y va mucho más rápido (las gráficas AMD/Intel no aceleran — con ellas funciona por procesador igualmente).
 
 ## Instalación desde el código (desarrolladores)
 
