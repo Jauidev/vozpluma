@@ -1,81 +1,83 @@
 # VozPluma
 
-Dictado por voz **100% local** para Windows: habla y el texto se escribe solo en cualquier aplicación — chats, Word, el navegador, tu editor de código. Tu voz nunca sale de tu ordenador.
+**English** · [Español](README.es.md)
 
-## Características
+**100% local** voice dictation for Windows: speak and the text types itself into any application — chats, Word, your browser, your code editor. Your voice never leaves your computer.
 
-- **Transcripción local con IA**: NVIDIA Nemotron 3.5 ASR (rápido, ligero) o Whisper large-v3-turbo en int8 (máxima calidad) — se cambia desde la interfaz
-- **Modo widget**: pastilla flotante que escribe lo que dictas directamente donde esté el cursor, en cualquier app, sin robar el foco
-- **Dictado continuo manos libres**: habla frase tras frase; detecta tus pausas y transcribe en paralelo mientras ya escucha la siguiente, con indicador de progreso
-- **7 idiomas**: español, inglés, francés, alemán, italiano, portugués y árabe
-- **Interfaz Windows 11** (WPF + tema Fluent con Mica) con ajustes separados de **General** (micrófono, comportamiento) y **Rendimiento** (corte por silencio, tiempos de espera)
-- **Funciona en cualquier PC**: con GPU NVIDIA va acelerado; sin ella (o con AMD/Intel) usa el procesador automáticamente
-- **Privado por diseño**: sin nube, sin cuentas, sin telemetría — internet solo para descargar los modelos la primera vez
+## Features
 
-## Instalación rápida (usuarios)
+- **Local AI transcription**: NVIDIA Nemotron 3.5 ASR (fast, lightweight) or Whisper large-v3-turbo in int8 (best quality) — switchable from the UI
+- **Widget mode**: a floating pill that types what you dictate right where your cursor is, in any app, without stealing focus
+- **Hands-free continuous dictation**: speak phrase after phrase; it detects your pauses and transcribes in parallel while already listening for the next one, with a progress indicator
+- **7 languages**: Spanish, English, French, German, Italian, Portuguese and Arabic
+- **Windows 11 interface** (WPF + Fluent theme with Mica) with separate **General** (microphone, behavior) and **Performance** (silence cutoff, timeouts) settings
+- **Runs on any PC**: accelerated with an NVIDIA GPU; without one (or with AMD/Intel) it automatically uses the CPU
+- **Private by design**: no cloud, no accounts, no telemetry — internet is only needed to download the models the first time
 
-1. Descarga `VozPluma-v1.0.zip` desde [Releases](https://github.com/Jauidev/vozpluma/releases) y descomprímelo
-2. Doble clic en `instalar.bat` — instala Python y las dependencias solo
-   (si te dice que ha instalado Python, ciérralo y vuelve a ejecutarlo: solo pasa la primera vez)
-3. Abre `VozPluma.exe` — la primera vez descarga el modelo de voz (~1.5 GB)
+## Quick install (users)
 
-El paquete descomprimido queda así:
+1. Download `VozPluma-v1.0.zip` from [Releases](https://github.com/Jauidev/vozpluma/releases) and unzip it
+2. Double-click `instalar.bat` — it installs Python and all dependencies by itself
+   (if it says it just installed Python, close it and run it again: only happens the first time)
+3. Open `VozPluma.exe` — the first run downloads the speech model (~1.5 GB)
+
+The unzipped package looks like this:
 
 ```
 VozPluma\
-├── VozPluma.exe        ← la aplicación (autocontenida, no necesita .NET)
-├── instalar.bat        ← ejecútalo primero, una sola vez
-├── LEEME.txt           ← instrucciones y solución de problemas
+├── VozPluma.exe        ← the app (self-contained, no .NET required)
+├── instalar.bat        ← run this first, once
+├── LEEME.txt           ← instructions and troubleshooting (Spanish)
 ├── engine.py, talk.py, transcribe.py
 └── requirements.txt
 ```
 
-**Requisitos**: Windows 10/11 x64 · 8 GB RAM · No necesita gráfica: funciona en cualquier PC usando el procesador. Si tienes una **GPU NVIDIA**, la usa automáticamente y va mucho más rápido (las gráficas AMD/Intel no aceleran — con ellas funciona por procesador igualmente).
+**Requirements**: Windows 10/11 x64 · 8 GB RAM · No GPU needed: it runs on any PC using the CPU. If you have an **NVIDIA GPU** it is used automatically and runs much faster (AMD/Intel cards don't accelerate — with those it runs on CPU as well).
 
-## Instalación desde el código (desarrolladores)
+## Install from source (developers)
 
 ```bat
 git clone https://github.com/Jauidev/vozpluma.git
 cd vozpluma
 instalar.bat
-:: la interfaz necesita el SDK de .NET 9 para compilar:
+:: the UI needs the .NET 9 SDK to build:
 dotnet build ui\VoiceAgent.csproj -c Release
 ```
 
-También puedes usar el motor sin interfaz gráfica:
+You can also use the engine without the GUI:
 
 ```bat
-.venv\Scripts\python.exe talk.py es-ES          :: dictado en consola (Nemotron)
-.venv\Scripts\python.exe talk.py es-ES whisper  :: con Whisper int8
-.venv\Scripts\python.exe transcribe.py audio.mp3 es-ES  :: transcribir un archivo
+.venv\Scripts\python.exe talk.py es-ES          :: console dictation (Nemotron)
+.venv\Scripts\python.exe talk.py es-ES whisper  :: with Whisper int8
+.venv\Scripts\python.exe transcribe.py audio.mp3 es-ES  :: transcribe a file
 ```
 
-## Arquitectura
+## Architecture
 
 ```
-┌─────────────────────┐   JSON por stdin/stdout   ┌──────────────────────┐
+┌─────────────────────┐   JSON over stdin/stdout  ┌──────────────────────┐
 │  VozPluma.exe       │ ◄───────────────────────► │  engine.py           │
 │  C# WPF (Fluent)    │   rec / stop / quit       │  Python              │
-│  · ventana principal│   ready / listening /     │  · captura de audio  │
-│  · widget flotante  │   transcribing / text     │  · VAD por energía   │
-│  · ajustes          │                           │  · Nemotron / Whisper│
-│  · SendInput Unicode│                           │  · mic persistente   │
+│  · main window      │   ready / listening /     │  · audio capture     │
+│  · floating widget  │   transcribing / text     │  · energy-based VAD  │
+│  · settings         │                           │  · Nemotron / Whisper│
+│  · SendInput Unicode│                           │  · persistent mic    │
 └─────────────────────┘                           └──────────────────────┘
 ```
 
-- El widget usa `WS_EX_NOACTIVATE` para no robar el foco y `SendInput` con caracteres Unicode para escribir en la app activa
-- El motor mantiene el micrófono abierto y transcribe en un hilo aparte: escucha tu siguiente frase mientras la GPU procesa la anterior
-- La grabación se recorta al segmento con voz antes de transcribir para evitar alucinaciones del modelo sobre el ruido
-- Los ajustes se guardan en `ajustes.json` y se pasan al motor como argumentos (`--mic`, `--silencio`, `--espera`, `--maxseg`)
+- The widget uses `WS_EX_NOACTIVATE` to never steal focus and `SendInput` with Unicode characters to type into the active app
+- The engine keeps the microphone open and transcribes on a separate thread: it listens to your next phrase while the GPU processes the previous one
+- Recordings are trimmed to the voiced segment before transcription to prevent the model from hallucinating words out of noise
+- Settings are stored in `ajustes.json` and passed to the engine as arguments (`--mic`, `--silencio`, `--espera`, `--maxseg`)
 
-## Hoja de ruta
+## Roadmap
 
-- [ ] Aceleración en gráficas AMD e Intel (vía whisper.cpp/Vulkan o DirectML); hoy esas gráficas funcionan por CPU
-- [ ] Soporte para macOS y Linux (el motor Python ya es multiplataforma; falta portar la interfaz y la escritura en otras apps)
-- [ ] Respuestas habladas: conectar la transcripción a un LLM y leer la respuesta en voz alta
+- [ ] AMD and Intel GPU acceleration (via whisper.cpp/Vulkan or DirectML); today those GPUs run on CPU
+- [ ] macOS and Linux support (the Python engine is already cross-platform; the UI and text injection need porting)
+- [ ] Spoken replies: connect the transcription to an LLM and read the answer out loud
 
-¿Ideas o contribuciones? Abre un issue o un pull request.
+Ideas or contributions? Open an issue or a pull request.
 
-## Licencia
+## License
 
-MIT — ver [LICENSE](LICENSE). Los modelos se descargan de Hugging Face bajo sus propias licencias: [Nemotron 3.5 ASR](https://huggingface.co/nvidia/nemotron-3.5-asr-streaming-0.6b) (NVIDIA Open Model License) y [Whisper](https://huggingface.co/openai/whisper-large-v3-turbo) (MIT).
+MIT — see [LICENSE](LICENSE). Models are downloaded from Hugging Face under their own licenses: [Nemotron 3.5 ASR](https://huggingface.co/nvidia/nemotron-3.5-asr-streaming-0.6b) (NVIDIA Open Model License) and [Whisper](https://huggingface.co/openai/whisper-large-v3-turbo) (MIT).
