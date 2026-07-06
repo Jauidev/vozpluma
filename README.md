@@ -72,6 +72,13 @@ También puedes usar el motor sin interfaz gráfica:
 - La grabación se recorta al segmento con voz antes de transcribir para evitar alucinaciones del modelo sobre el ruido
 - Los ajustes se guardan en `ajustes.json` y se pasan al motor como argumentos (`--mic`, `--silencio`, `--espera`, `--maxseg`)
 
+## Hoja de ruta
+
+- [ ] Soporte para macOS y Linux (el motor Python ya es multiplataforma; falta portar la interfaz y la escritura en otras apps)
+- [ ] Respuestas habladas: conectar la transcripción a un LLM y leer la respuesta en voz alta
+
+¿Ideas o contribuciones? Abre un issue o un pull request.
+
 ## Licencia
 
 MIT — ver [LICENSE](LICENSE). Los modelos se descargan de Hugging Face bajo sus propias licencias: [Nemotron 3.5 ASR](https://huggingface.co/nvidia/nemotron-3.5-asr-streaming-0.6b) (NVIDIA Open Model License) y [Whisper](https://huggingface.co/openai/whisper-large-v3-turbo) (MIT).
