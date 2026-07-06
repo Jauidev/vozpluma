@@ -11,10 +11,11 @@ import time
 # consolas Windows con cp1252 no soportan emojis
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-import librosa
 import numpy as np
 import sounddevice as sd
-from transformers import AutoModelForRNNT, AutoProcessor
+
+# transformers, torch y librosa se importan solo cuando hacen falta:
+# son lentísimos de cargar y retrasaban cada arranque de la app
 
 MODEL_ID = "nvidia/nemotron-3.5-asr-streaming-0.6b"
 MODEL_SR = 16000  # el modelo espera 16 kHz
@@ -120,6 +121,7 @@ def _procesar(frames, niveles, umbral, rate):
     audio = np.concatenate(frames[ini:fin])[:, 0]
 
     if rate != MODEL_SR:
+        import librosa
         audio = librosa.resample(audio, orig_sr=rate, target_sr=MODEL_SR)
     # normaliza el volumen: la señal del micro llega muy baja
     pico = np.abs(audio).max()
@@ -201,10 +203,14 @@ class MicrofonoContinuo:
 def cargar_transcriptor(usar_whisper, language):
     """Devuelve una función audio->texto con el modelo elegido."""
     if usar_whisper:
+        import importlib.util
         import os
-        import torch
-        # ctranslate2 necesita las DLL de CUDA que trae torch
-        os.add_dll_directory(os.path.join(os.path.dirname(torch.__file__), "lib"))
+        # ctranslate2 necesita las DLL de CUDA que trae torch; localizamos la
+        # carpeta sin importar torch (importarlo tarda ~10 s y no hace falta)
+        spec = importlib.util.find_spec("torch")
+        if spec and spec.submodule_search_locations:
+            os.add_dll_directory(
+                os.path.join(spec.submodule_search_locations[0], "lib"))
         from faster_whisper import WhisperModel
         # int8: ~1.4 GB de VRAM y misma calidad; fp16 puro da basura en la GTX 1650
         try:
@@ -222,6 +228,7 @@ def cargar_transcriptor(usar_whisper, language):
 
         return "Whisper large-v3-turbo (int8)", transcribir
 
+    from transformers import AutoModelForRNNT, AutoProcessor
     processor = AutoProcessor.from_pretrained(MODEL_ID)
     model = AutoModelForRNNT.from_pretrained(MODEL_ID, device_map="auto")
 

@@ -6,6 +6,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using Brush = System.Windows.Media.Brush;
+using Brushes = System.Windows.Media.Brushes;
+using Clipboard = System.Windows.Clipboard;
 
 namespace VoiceAgent;
 
@@ -15,14 +18,29 @@ public partial class MainWindow
     private Storyboard _pulso = null!;
     private bool _listo;
     private WidgetWindow? _widget;
+    private System.Windows.Forms.NotifyIcon? _bandeja;
+    private bool _salir;
+    private bool _avisoBandeja;
 
     /// (evento, texto|mensaje) — el widget se suscribe para reaccionar al motor
     public event Action<string, string?>? MotorEvento;
 
-    public MainWindow()
+    public MainWindow(EventWaitHandle? mostrar = null)
     {
         InitializeComponent();
         Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this);
+        CrearIconoBandeja();
+
+        // otra instancia del exe nos pide mostrarnos (ver Program.Main)
+        if (mostrar is not null)
+        {
+            var hilo = new Thread(() =>
+            {
+                while (mostrar.WaitOne())
+                    Dispatcher.Invoke(Restaurar);
+            }) { IsBackground = true };
+            hilo.Start();
+        }
 
         var idiomas = new[] { "es-ES", "en-US", "fr-FR", "de-DE", "it-IT", "pt-BR", "ar-SA" };
         foreach (var l in idiomas)
@@ -42,9 +60,55 @@ public partial class MainWindow
         Loaded += (_, _) => IniciarMotor();
         Closed += (_, _) =>
         {
+            _bandeja?.Dispose();
             _widget?.Close();
             PararMotor();
         };
+    }
+
+    // ---------- Bandeja del sistema ----------
+
+    private void CrearIconoBandeja()
+    {
+        _bandeja = new System.Windows.Forms.NotifyIcon
+        {
+            Icon = System.Drawing.Icon.ExtractAssociatedIcon(Environment.ProcessPath!),
+            Text = "VozPluma",
+            Visible = true,
+        };
+        _bandeja.DoubleClick += (_, _) => Restaurar();
+        var menu = new System.Windows.Forms.ContextMenuStrip();
+        menu.Items.Add("Abrir", null, (_, _) => Restaurar());
+        menu.Items.Add("Salir", null, (_, _) => { _salir = true; Close(); });
+        _bandeja.ContextMenuStrip = menu;
+    }
+
+    private void Restaurar()
+    {
+        Show();
+        WindowState = WindowState.Normal;
+        Activate();
+    }
+
+    // cerrar la ventana la esconde a la bandeja con el modelo aún cargado;
+    // "Salir" del menú de la bandeja cierra de verdad
+    protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+    {
+        if (!_salir)
+        {
+            e.Cancel = true;
+            Hide();
+            if (!_avisoBandeja)
+            {
+                _avisoBandeja = true;
+                _bandeja?.ShowBalloonTip(4000, "VozPluma sigue activo",
+                    "Queda en la bandeja con el modelo cargado: al reabrirlo no hay espera. " +
+                    "Clic derecho en el icono → Salir para cerrarlo del todo.",
+                    System.Windows.Forms.ToolTipIcon.Info);
+            }
+            return;
+        }
+        base.OnClosing(e);
     }
 
     // ---------- Motor Python ----------
@@ -66,7 +130,7 @@ public partial class MainWindow
         _listo = false;
         BotonMic.IsEnabled = false;
         BotonWidget.IsEnabled = false;
-        Estado_("Cargando modelo… (puede tardar un poco la primera vez)");
+        Estado_("Cargando el modelo en memoria… (solo se descarga la primera vez)");
 
         var raiz = RaizProyecto();
         var python = Path.Combine(raiz, ".venv", "Scripts", "python.exe");
