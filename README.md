@@ -1,8 +1,6 @@
-<p align="center">
-  <img src="logo.png" alt="VozPluma" width="140" />
-</p>
-
 # VozPluma
+
+https://github.com/Jauidev/vozpluma
 
 Dictado por voz **100% local** para Windows: habla y el texto se escribe solo en cualquier aplicación — chats, Word, el navegador, tu editor de código. Tu voz nunca sale de tu ordenador.
 
@@ -18,7 +16,7 @@ Dictado por voz **100% local** para Windows: habla y el texto se escribe solo en
 
 ## Instalación rápida (usuarios)
 
-1. Descarga `VozPluma-v1.0.zip` desde [Releases](../../releases) y descomprímelo
+1. Descarga `VozPluma-v1.0.zip` desde [Releases](https://github.com/Jauidev/vozpluma/releases) y descomprímelo
 2. Doble clic en `instalar.bat` — instala Python y las dependencias solo
    (si te dice que ha instalado Python, ciérralo y vuelve a ejecutarlo: solo pasa la primera vez)
 3. Abre `VozPluma.exe` — la primera vez descarga el modelo de voz (~1.5 GB)
@@ -39,8 +37,8 @@ VozPluma\
 ## Instalación desde el código (desarrolladores)
 
 ```bat
-git clone <este-repo>
-cd <carpeta>
+git clone https://github.com/Jauidev/vozpluma.git
+cd vozpluma
 instalar.bat
 :: la interfaz necesita el SDK de .NET 9 para compilar:
 dotnet build ui\VoiceAgent.csproj -c Release
