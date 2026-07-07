@@ -8,15 +8,16 @@ Dictado por voz **100% local** para Windows: habla y el texto se escribe solo en
 
 - **Transcripción local con IA**: NVIDIA Nemotron 3.5 ASR (rápido, ligero) o Whisper large-v3-turbo en int8 (máxima calidad) — se cambia desde la interfaz
 - **Modo widget**: pastilla flotante que escribe lo que dictas directamente donde esté el cursor, en cualquier app, sin robar el foco
-- **Dictado continuo manos libres**: habla frase tras frase; detecta tus pausas y transcribe en paralelo mientras ya escucha la siguiente, con indicador de progreso
+- **Tú controlas la grabación**: pulsa para empezar, habla a tu ritmo — con las pausas que quieras — y pulsa otra vez para parar y transcribir; sin cortes automáticos por silencio
 - **7 idiomas**: español, inglés, francés, alemán, italiano, portugués y árabe
-- **Interfaz Windows 11** (WPF + tema Fluent con Mica) con ajustes separados de **General** (micrófono, comportamiento) y **Rendimiento** (corte por silencio, tiempos de espera)
-- **Funciona en cualquier PC**: con GPU NVIDIA va acelerado; sin ella (o con AMD/Intel) usa el procesador automáticamente
+- **Interfaz Windows 11** (WPF + tema Fluent con Mica) con ajustes separados de **General** (micrófono, comportamiento) y **Rendimiento**
+- **Funciona en cualquier PC**: con GPU NVIDIA va acelerado; sin ella (o con AMD/Intel) hay un **modo CPU** que usa todos los núcleos y evita el intento de GPU, arrancando más rápido
+- **Cerrar es cerrar**: al salir de la app se libera toda la memoria — nada queda en segundo plano
 - **Privado por diseño**: sin nube, sin cuentas, sin telemetría — internet solo para descargar los modelos la primera vez
 
 ## Instalación rápida (usuarios)
 
-1. Descarga `VozPluma-v1.0.zip` desde [Releases](https://github.com/Jauidev/vozpluma/releases) y descomprímelo
+1. Descarga `VozPluma-v1.1.0.zip` desde [Releases](https://github.com/Jauidev/vozpluma/releases) y descomprímelo
 2. Doble clic en `instalar.bat` — instala Python y las dependencias solo
    (si te dice que ha instalado Python, ciérralo y vuelve a ejecutarlo: solo pasa la primera vez)
 3. Abre `VozPluma.exe` — la primera vez descarga el modelo de voz (~1.5 GB)
@@ -66,9 +67,9 @@ También puedes usar el motor sin interfaz gráfica:
 ```
 
 - El widget usa `WS_EX_NOACTIVATE` para no robar el foco y `SendInput` con caracteres Unicode para escribir en la app activa
-- El motor mantiene el micrófono abierto y transcribe en un hilo aparte: escucha tu siguiente frase mientras la GPU procesa la anterior
+- El motor mantiene el micrófono abierto entre grabaciones y transcribe en un hilo aparte; la grabación dura hasta que pulsas parar (con un tope de seguridad configurable)
 - La grabación se recorta al segmento con voz antes de transcribir para evitar alucinaciones del modelo sobre el ruido
-- Los ajustes se guardan en `ajustes.json` y se pasan al motor como argumentos (`--mic`, `--silencio`, `--espera`, `--maxseg`)
+- Los ajustes se guardan en `ajustes.json` y se pasan al motor como argumentos (`--mic`, `--maxseg`, `--cpu`)
 
 ## Hoja de ruta
 
