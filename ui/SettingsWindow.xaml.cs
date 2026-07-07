@@ -100,4 +100,16 @@ public partial class SettingsWindow
 
     private void Cancelar_Click(object sender, RoutedEventArgs e) =>
         DialogResult = false;
+
+    private void Desinstalar_Click(object sender, RoutedEventArgs e)
+    {
+        var respuesta = System.Windows.MessageBox.Show(
+            "Se abrirá el desinstalador y VozPluma se cerrará. ¿Continuar?",
+            "Desinstalar VozPluma", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+        if (respuesta != MessageBoxResult.Yes) return;
+
+        Process.Start(Environment.ProcessPath!, "--desinstalar");
+        DialogResult = false;
+        ((MainWindow)Owner).SalirDeVerdad();
+    }
 }

@@ -79,8 +79,15 @@ public partial class MainWindow
         _bandeja.DoubleClick += (_, _) => Restaurar();
         var menu = new System.Windows.Forms.ContextMenuStrip();
         menu.Items.Add("Abrir", null, (_, _) => Restaurar());
-        menu.Items.Add("Salir", null, (_, _) => { _salir = true; Close(); });
+        menu.Items.Add("Salir", null, (_, _) => SalirDeVerdad());
         _bandeja.ContextMenuStrip = menu;
+    }
+
+    /// Cierra la app de verdad (sin quedarse en la bandeja).
+    public void SalirDeVerdad()
+    {
+        _salir = true;
+        Close();
     }
 
     private void Restaurar()

@@ -1,0 +1,47 @@
+<ui:FluentWindow
+    x:Class="VoiceAgent.DesinstaladorWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Title="Desinstalar VozPluma"
+    Width="440" SizeToContent="Height" ResizeMode="NoResize"
+    WindowBackdropType="Mica"
+    ExtendsContentIntoTitleBar="True"
+    WindowCornerPreference="Round"
+    WindowStartupLocation="CenterScreen">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar Grid.Row="0" Title="Desinstalar VozPluma"
+                     ShowMaximize="False" ShowMinimize="False" />
+
+        <StackPanel Grid.Row="1" Margin="24,8,24,20">
+            <TextBlock TextWrapping="Wrap" FontSize="13" Margin="0,0,0,12"
+                       Text="Se eliminará todo lo que VozPluma instaló en este equipo:" />
+            <TextBlock TextWrapping="Wrap" FontSize="13" Margin="8,0,0,12"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                       Text="• Los modelos de voz descargados (~5 GB)&#10;• El entorno de Python (.venv)&#10;• Los ajustes guardados" />
+            <TextBlock TextWrapping="Wrap" FontSize="12" Margin="0,0,0,16"
+                       Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                       Text="Al terminar solo quedará la carpeta con la aplicación, que podrás borrar a mano." />
+
+            <TextBlock x:Name="Estado" TextWrapping="Wrap" FontSize="12"
+                       Margin="0,0,0,16" Visibility="Collapsed"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <ui:Button x:Name="BotonCancelar" Content="Cancelar"
+                           Margin="0,0,8,0" Click="Cancelar_Click" />
+                <ui:Button x:Name="BotonDesinstalar" Content="Desinstalar"
+                           Appearance="Danger" Click="Desinstalar_Click" />
+                <ui:Button x:Name="BotonTerminar" Content="Abrir carpeta y salir"
+                           Appearance="Primary" Visibility="Collapsed"
+                           Click="Terminar_Click" />
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</ui:FluentWindow>

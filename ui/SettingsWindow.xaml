@@ -98,10 +98,14 @@
             </StackPanel>
         </ScrollViewer>
 
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right"
-                    Margin="24,8,24,20">
-            <ui:Button Content="Cancelar" Margin="0,0,8,0" Click="Cancelar_Click" />
-            <ui:Button Content="Guardar" Appearance="Primary" Click="Guardar_Click" />
-        </StackPanel>
+        <Grid Grid.Row="2" Margin="24,8,24,20">
+            <ui:Button Content="Desinstalar…" Appearance="Danger" FontSize="12"
+                       HorizontalAlignment="Left" Click="Desinstalar_Click"
+                       ToolTip="Elimina los modelos descargados y el entorno de Python" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <ui:Button Content="Cancelar" Margin="0,0,8,0" Click="Cancelar_Click" />
+                <ui:Button Content="Guardar" Appearance="Primary" Click="Guardar_Click" />
+            </StackPanel>
+        </Grid>
     </Grid>
 </ui:FluentWindow>
