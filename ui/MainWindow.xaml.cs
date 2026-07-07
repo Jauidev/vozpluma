@@ -183,17 +183,46 @@ public partial class MainWindow
 
     private void PararMotor()
     {
+        var viejo = _engine;
+        _engine = null;
+        Parar(viejo);
+    }
+
+    private static void Parar(Process? motor)
+    {
         try
         {
-            if (_engine is { HasExited: false })
+            if (motor is { HasExited: false })
             {
-                _engine.StandardInput.WriteLine("quit");
-                if (!_engine.WaitForExit(2000))
-                    _engine.Kill(entireProcessTree: true);
+                motor.StandardInput.WriteLine("quit");
+                if (!motor.WaitForExit(2000))
+                    motor.Kill(entireProcessTree: true);
             }
         }
-        catch { /* cerrando la app; el proceso muere igualmente */ }
+        catch { /* cerrando; el proceso muere igualmente */ }
+    }
+
+    private bool _reiniciando;
+
+    // parar y arrancar sin congelar la interfaz: la espera al motor viejo
+    // (hasta 2 s, debe soltar el micrófono) ocurre en segundo plano
+    private async void ReiniciarMotor()
+    {
+        if (_reiniciando) return;
+        _reiniciando = true;
+        _listo = false;
+        BotonMic.IsEnabled = false;
+        BotonMic.Visibility = Visibility.Collapsed;
+        Carga.Visibility = Visibility.Visible;
+        BotonWidget.IsEnabled = false;
+        Estado_("Cambiando…");
+
+        var viejo = _engine;
         _engine = null;
+        await Task.Run(() => Parar(viejo));
+
+        IniciarMotor();
+        _reiniciando = false;
     }
 
     private void ProcesarEvento(string linea)
@@ -288,10 +317,7 @@ public partial class MainWindow
     {
         var ventana = new SettingsWindow { Owner = this };
         if (ventana.ShowDialog() == true)
-        {
-            PararMotor();
-            IniciarMotor(); // aplica micrófono y parámetros de rendimiento nuevos
-        }
+            ReiniciarMotor(); // aplica micrófono y parámetros de rendimiento nuevos
     }
 
     private void BotonWidget_Click(object sender, RoutedEventArgs e)
@@ -310,8 +336,7 @@ public partial class MainWindow
         a.Idioma = (string)IdiomaCombo.SelectedItem;
         a.UsarWhisper = ModeloCombo.SelectedIndex == 0;
         a.Guardar();
-        PararMotor();
-        IniciarMotor();
+        ReiniciarMotor();
     }
 
     private void AgregarTarjeta(string texto)
