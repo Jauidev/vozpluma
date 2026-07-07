@@ -19,9 +19,6 @@ public partial class MainWindow
     private bool _listo;
     private bool _grabando; // el botón de micro está en modo "parar"
     private WidgetWindow? _widget;
-    private System.Windows.Forms.NotifyIcon? _bandeja;
-    private bool _salir;
-    private bool _avisoBandeja;
 
     /// (evento, texto|mensaje) — el widget se suscribe para reaccionar al motor
     public event Action<string, string?>? MotorEvento;
@@ -30,7 +27,6 @@ public partial class MainWindow
     {
         InitializeComponent();
         Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this);
-        CrearIconoBandeja();
 
         // otra instancia del exe nos pide mostrarnos (ver Program.Main)
         if (mostrar is not null)
@@ -59,64 +55,23 @@ public partial class MainWindow
         _pulso = (Storyboard)FindResource("Pulso");
 
         Loaded += (_, _) => IniciarMotor();
+        // cerrar la ventana cierra la app de verdad: motor Python incluido,
+        // nada queda consumiendo memoria en segundo plano
         Closed += (_, _) =>
         {
-            _bandeja?.Dispose();
             _widget?.Close();
             PararMotor();
         };
     }
 
-    // ---------- Bandeja del sistema ----------
-
-    private void CrearIconoBandeja()
-    {
-        _bandeja = new System.Windows.Forms.NotifyIcon
-        {
-            Icon = System.Drawing.Icon.ExtractAssociatedIcon(Environment.ProcessPath!),
-            Text = "VozPluma",
-            Visible = true,
-        };
-        _bandeja.DoubleClick += (_, _) => Restaurar();
-        var menu = new System.Windows.Forms.ContextMenuStrip();
-        menu.Items.Add("Abrir", null, (_, _) => Restaurar());
-        menu.Items.Add("Salir", null, (_, _) => SalirDeVerdad());
-        _bandeja.ContextMenuStrip = menu;
-    }
-
-    /// Cierra la app de verdad (sin quedarse en la bandeja).
-    public void SalirDeVerdad()
-    {
-        _salir = true;
-        Close();
-    }
+    /// Cierra la app (alias histórico; el cierre normal ya termina todo).
+    public void SalirDeVerdad() => Close();
 
     private void Restaurar()
     {
         Show();
         WindowState = WindowState.Normal;
         Activate();
-    }
-
-    // cerrar la ventana la esconde a la bandeja con el modelo aún cargado;
-    // "Salir" del menú de la bandeja cierra de verdad
-    protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
-    {
-        if (!_salir)
-        {
-            e.Cancel = true;
-            Hide();
-            if (!_avisoBandeja)
-            {
-                _avisoBandeja = true;
-                _bandeja?.ShowBalloonTip(4000, "VozPluma sigue activo",
-                    "Queda en la bandeja con el modelo cargado: al reabrirlo no hay espera. " +
-                    "Clic derecho en el icono → Salir para cerrarlo del todo.",
-                    System.Windows.Forms.ToolTipIcon.Info);
-            }
-            return;
-        }
-        base.OnClosing(e);
     }
 
     // ---------- Motor Python ----------
