@@ -53,6 +53,12 @@
                         BorderThickness="1" CornerRadius="8" Padding="16">
                     <StackPanel>
 
+                        <CheckBox x:Name="CpuCheck"
+                                  Content="Acelerar con la CPU (equipos sin gráfica NVIDIA)" />
+                        <TextBlock Text="Carga el modelo directamente en la CPU usando todos sus núcleos, sin intentar la gráfica. Actívalo si tu PC no tiene GPU NVIDIA o da errores al cargar."
+                                   FontSize="11" TextWrapping="Wrap" Margin="0,2,0,16"
+                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+
                         <Grid>
                             <TextBlock Text="Duración máxima de grabación" FontSize="13" />
                             <TextBlock x:Name="MaxSegValor" FontSize="13"

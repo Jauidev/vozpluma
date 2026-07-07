@@ -5,6 +5,7 @@
 # La grabación no se corta por silencio: dura hasta que llega "stop".
 #
 # Uso: python engine.py [codigo_idioma] [whisper] [--mic=N] [--maxseg=300]
+#                       [--cpu]  (fuerza CPU: equipos sin gráfica NVIDIA)
 #      python engine.py --list-mics   (lista los micrófonos en JSON y sale)
 import contextlib
 import json
@@ -58,6 +59,7 @@ def main():
 
     mic_idx = int(opciones.get("mic", -1))
     maxseg = float(opciones.get("maxseg", 300))
+    forzar_cpu = "cpu" in opciones
 
     try:
         # los prints informativos de talk.py van a stderr para no romper el JSON
@@ -74,7 +76,7 @@ def main():
                 device, rate = talk.buscar_microfono()
             nombre_mic = sd.query_devices(device)["name"]
             nombre_modelo, transcribir = talk.cargar_transcriptor(
-                usar_whisper, language)
+                usar_whisper, language, forzar_cpu)
             mic = talk.MicrofonoContinuo(device, rate)
     except Exception as e:
         emitir("error", message=str(e))

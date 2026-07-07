@@ -15,6 +15,7 @@ public class Ajustes
     // --- Rendimiento ---
     // La grabación la paras tú; esto es solo un tope de seguridad.
     public int MaxSeg { get; set; } = 300;         // duración máxima de una grabación
+    public bool ForzarCpu { get; set; } = false;   // equipos sin gráfica NVIDIA
 
     private static string Ruta =>
         Path.Combine(MainWindow.RaizProyecto(), "ajustes.json");

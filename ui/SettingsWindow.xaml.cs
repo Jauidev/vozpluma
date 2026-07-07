@@ -23,6 +23,7 @@ public partial class SettingsWindow
 
         var a = Ajustes.Actual;
         EspacioCheck.IsChecked = a.EspacioFinal;
+        CpuCheck.IsChecked = a.ForzarCpu;
         MaxSegSlider.Value = a.MaxSeg;
         ActualizarEtiquetas();
 
@@ -84,6 +85,7 @@ public partial class SettingsWindow
         {
             MicIndex = (int)(((ComboBoxItem?)MicCombo.SelectedItem)?.Tag ?? -1),
             EspacioFinal = EspacioCheck.IsChecked == true,
+            ForzarCpu = CpuCheck.IsChecked == true,
             MaxSeg = (int)MaxSegSlider.Value,
             // conserva lo elegido en la ventana principal
             Idioma = Ajustes.Actual.Idioma,

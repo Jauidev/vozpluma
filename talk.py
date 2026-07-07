@@ -186,25 +186,34 @@ class MicrofonoContinuo:
         return _procesar(frames, niveles, umbral, self.rate)
 
 
-def cargar_transcriptor(usar_whisper, language):
-    """Devuelve una función audio->texto con el modelo elegido."""
+def cargar_transcriptor(usar_whisper, language, forzar_cpu=False):
+    """Devuelve una función audio->texto con el modelo elegido.
+    forzar_cpu: carga directo en CPU con todos los núcleos (equipos sin
+    gráfica NVIDIA; también evita el intento de CUDA, que retrasa la carga)."""
     if usar_whisper:
-        import importlib.util
         import os
-        # ctranslate2 necesita las DLL de CUDA que trae torch; localizamos la
-        # carpeta sin importar torch (importarlo tarda ~10 s y no hace falta)
-        spec = importlib.util.find_spec("torch")
-        if spec and spec.submodule_search_locations:
-            os.add_dll_directory(
-                os.path.join(spec.submodule_search_locations[0], "lib"))
+        hilos = os.cpu_count() or 4
+        if not forzar_cpu:
+            import importlib.util
+            # ctranslate2 necesita las DLL de CUDA que trae torch; localizamos
+            # la carpeta sin importar torch (importarlo tarda ~10 s y no hace falta)
+            spec = importlib.util.find_spec("torch")
+            if spec and spec.submodule_search_locations:
+                os.add_dll_directory(
+                    os.path.join(spec.submodule_search_locations[0], "lib"))
         from faster_whisper import WhisperModel
-        # int8: ~1.4 GB de VRAM y misma calidad; fp16 puro da basura en la GTX 1650
-        try:
-            fw = WhisperModel("large-v3-turbo", device="cuda",
-                              compute_type="int8_float32")
-        except Exception:
-            # sin GPU NVIDIA utilizable: CPU en int8 (más lento pero funciona)
-            fw = WhisperModel("large-v3-turbo", device="cpu", compute_type="int8")
+        if forzar_cpu:
+            fw = WhisperModel("large-v3-turbo", device="cpu",
+                              compute_type="int8", cpu_threads=hilos)
+        else:
+            # int8: ~1.4 GB de VRAM y misma calidad; fp16 puro da basura en la GTX 1650
+            try:
+                fw = WhisperModel("large-v3-turbo", device="cuda",
+                                  compute_type="int8_float32")
+            except Exception:
+                # sin GPU NVIDIA utilizable: CPU en int8 (más lento pero funciona)
+                fw = WhisperModel("large-v3-turbo", device="cpu",
+                                  compute_type="int8", cpu_threads=hilos)
         idioma = language.split("-")[0]
 
         def transcribir(audio):
@@ -212,11 +221,13 @@ def cargar_transcriptor(usar_whisper, language):
             segments, _ = fw.transcribe(audio, language=idioma, vad_filter=True)
             return " ".join(s.text.strip() for s in segments)
 
-        return "Whisper large-v3-turbo (int8)", transcribir
+        etiqueta = ", CPU" if forzar_cpu else ""
+        return f"Whisper large-v3-turbo (int8{etiqueta})", transcribir
 
     from transformers import AutoModelForRNNT, AutoProcessor
     processor = AutoProcessor.from_pretrained(MODEL_ID)
-    model = AutoModelForRNNT.from_pretrained(MODEL_ID, device_map="auto")
+    model = AutoModelForRNNT.from_pretrained(
+        MODEL_ID, device_map="cpu" if forzar_cpu else "auto")
 
     def transcribir(audio):
         inputs = processor(audio, sampling_rate=MODEL_SR, language=language)
@@ -224,7 +235,7 @@ def cargar_transcriptor(usar_whisper, language):
         output = model.generate(**inputs, return_dict_in_generate=True)
         return processor.decode(output.sequences, skip_special_tokens=True)[0].strip()
 
-    return "Nemotron 3.5 ASR 0.6B", transcribir
+    return "Nemotron 3.5 ASR 0.6B" + (" (CPU)" if forzar_cpu else ""), transcribir
 
 
 def main():

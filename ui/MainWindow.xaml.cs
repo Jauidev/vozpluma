@@ -147,12 +147,13 @@ public partial class MainWindow
         var usarWhisper = ModeloCombo.SelectedIndex == 0 ? " whisper" : "";
         var idioma = (string)IdiomaCombo.SelectedItem;
         var aj = Ajustes.Actual;
+        var cpu = aj.ForzarCpu ? " --cpu" : "";
 
         var psi = new ProcessStartInfo
         {
             FileName = python,
             Arguments = $"-u engine.py {idioma}{usarWhisper} --mic={aj.MicIndex}" +
-                        $" --maxseg={aj.MaxSeg}",
+                        $" --maxseg={aj.MaxSeg}{cpu}",
             WorkingDirectory = raiz,
             UseShellExecute = false,
             CreateNoWindow = true,
