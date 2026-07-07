@@ -22,7 +22,7 @@
             <ui:Button x:Name="BotonHablar" Appearance="Primary"
                        Width="46" Height="46" CornerRadius="23"
                        Margin="0,0,8,0" Click="Hablar_Click"
-                       ToolTip="Dictado continuo — habla frase a frase; lo transcrito se escribe donde esté el cursor">
+                       ToolTip="Empieza a grabar — lo transcrito se escribe donde esté el cursor; pulsa parar cuando termines">
                 <ui:SymbolIcon Symbol="Mic24" FontSize="20" />
             </ui:Button>
 

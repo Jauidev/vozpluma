@@ -54,41 +54,15 @@
                     <StackPanel>
 
                         <Grid>
-                            <TextBlock Text="Corte por silencio" FontSize="13" />
-                            <TextBlock x:Name="SilencioValor" FontSize="13"
-                                       HorizontalAlignment="Right"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-                        </Grid>
-                        <Slider x:Name="SilencioSlider" Minimum="0.4" Maximum="2.0"
-                                TickFrequency="0.1" IsSnapToTickEnabled="True"
-                                ValueChanged="Slider_Changed" />
-                        <TextBlock Text="Pausa que da la frase por terminada. Más bajo = más rápido, pero puede cortarte entre palabras."
-                                   FontSize="11" TextWrapping="Wrap" Margin="0,2,0,16"
-                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
-
-                        <Grid>
-                            <TextBlock Text="Espera de voz" FontSize="13" />
-                            <TextBlock x:Name="EsperaValor" FontSize="13"
-                                       HorizontalAlignment="Right"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-                        </Grid>
-                        <Slider x:Name="EsperaSlider" Minimum="5" Maximum="30"
-                                TickFrequency="1" IsSnapToTickEnabled="True"
-                                ValueChanged="Slider_Changed" />
-                        <TextBlock Text="Cuánto espera a que empieces a hablar antes de rendirse (en el modo continuo simplemente reintenta)."
-                                   FontSize="11" TextWrapping="Wrap" Margin="0,2,0,16"
-                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
-
-                        <Grid>
-                            <TextBlock Text="Duración máxima de frase" FontSize="13" />
+                            <TextBlock Text="Duración máxima de grabación" FontSize="13" />
                             <TextBlock x:Name="MaxSegValor" FontSize="13"
                                        HorizontalAlignment="Right"
                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                         </Grid>
-                        <Slider x:Name="MaxSegSlider" Minimum="15" Maximum="120"
-                                TickFrequency="5" IsSnapToTickEnabled="True"
+                        <Slider x:Name="MaxSegSlider" Minimum="30" Maximum="600"
+                                TickFrequency="30" IsSnapToTickEnabled="True"
                                 ValueChanged="Slider_Changed" />
-                        <TextBlock Text="Tope de grabación por frase aunque no haya silencio."
+                        <TextBlock Text="Tope de seguridad: normalmente paras tú con el botón. La grabación no se corta al callarte."
                                    FontSize="11" TextWrapping="Wrap" Margin="0,2,0,0"
                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
 

@@ -99,7 +99,7 @@
                     <StackPanel x:Name="Lista" />
                 </ScrollViewer>
                 <TextBlock x:Name="Placeholder"
-                           Text="Pulsa el micrófono y habla&#10;La transcripción aparecerá aquí"
+                           Text="Pulsa el micrófono y habla&#10;Pulsa otra vez para parar y transcribir"
                            TextAlignment="Center" FontSize="13"
                            HorizontalAlignment="Center" VerticalAlignment="Center"
                            Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
@@ -126,8 +126,8 @@
                                Width="72" Height="72" CornerRadius="36"
                                HorizontalAlignment="Center" VerticalAlignment="Center"
                                IsEnabled="False" Click="BotonMic_Click"
-                               ToolTip="Pulsa y habla — se corta solo al callarte">
-                        <ui:SymbolIcon Symbol="Mic24" FontSize="28" />
+                               ToolTip="Pulsa y habla — cuando termines, pulsa otra vez para parar">
+                        <ui:SymbolIcon x:Name="IconoMic" Symbol="Mic24" FontSize="28" />
                     </ui:Button>
 
                     <!-- sustituye al micrófono mientras el modelo se carga -->

@@ -2,8 +2,9 @@
 # órdenes por stdin ("rec" = grabar y transcribir, "stop" = terminar la
 # grabación en curso, "quit" = salir).
 #
-# Uso: python engine.py [codigo_idioma] [whisper] [--mic=N] [--silencio=0.9]
-#                       [--espera=10] [--maxseg=60]
+# La grabación no se corta por silencio: dura hasta que llega "stop".
+#
+# Uso: python engine.py [codigo_idioma] [whisper] [--mic=N] [--maxseg=300]
 #      python engine.py --list-mics   (lista los micrófonos en JSON y sale)
 import contextlib
 import json
@@ -56,9 +57,7 @@ def main():
             language = a
 
     mic_idx = int(opciones.get("mic", -1))
-    silencio = float(opciones.get("silencio", 0.9))
-    espera = float(opciones.get("espera", 10))
-    maxseg = float(opciones.get("maxseg", 60))
+    maxseg = float(opciones.get("maxseg", 300))
 
     try:
         # los prints informativos de talk.py van a stderr para no romper el JSON
@@ -136,8 +135,7 @@ def main():
         try:
             emitir("listening")
             with contextlib.redirect_stdout(sys.stderr):
-                audio = mic.escuchar(max_seg=maxseg, silencio_fin=silencio,
-                                     espera_voz=espera, stop_event=parar)
+                audio = mic.escuchar(max_seg=maxseg, stop_event=parar)
             if len(audio) < talk.MODEL_SR / 2:
                 emitir("text", text="")
                 continue

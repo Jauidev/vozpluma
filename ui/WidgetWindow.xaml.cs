@@ -12,8 +12,6 @@ namespace VoiceAgent;
 public partial class WidgetWindow
 {
     private readonly MainWindow _principal;
-    private bool _continuo; // dictado manos libres: re-escucha tras cada frase
-    private int _transcribiendo; // frases pendientes de transcribir (van en paralelo)
 
     private static readonly Brush Gris = Brushes.Gray;
     private static readonly Brush Rojo = new SolidColorBrush(Color.FromRgb(0xE8, 0x4A, 0x4A));
@@ -63,37 +61,22 @@ public partial class WidgetWindow
             case "listening":
                 Punto.Fill = Rojo;
                 BotonHablar.IsEnabled = false;
-                BotonParar.IsEnabled = true;
+                BotonParar.IsEnabled = true; // grabando: solo se puede parar
                 break;
             case "transcribing":
                 Punto.Fill = Ambar;
-                BotonParar.IsEnabled = _continuo;
-                _transcribiendo++;
+                BotonParar.IsEnabled = false;
                 Progreso.Visibility = Visibility.Visible;
-                if (_continuo)
-                    _principal.EnviarOrden("rec"); // re-escucha YA: transcribe en paralelo
                 break;
             case "text":
-                if (_transcribiendo > 0 && --_transcribiendo == 0)
-                    Progreso.Visibility = Visibility.Collapsed;
+                Progreso.Visibility = Visibility.Collapsed;
                 if (!string.IsNullOrEmpty(dato))
                     Teclado.Escribir(dato + (Ajustes.Actual.EspacioFinal ? " " : ""));
-                if (_continuo)
-                {
-                    // si el ciclo terminó sin voz (timeout), re-arma la escucha
-                    if (string.IsNullOrEmpty(dato))
-                        _principal.EnviarOrden("rec");
-                }
-                else
-                {
-                    Punto.Fill = Verde;
-                    BotonHablar.IsEnabled = true;
-                    BotonParar.IsEnabled = false;
-                }
+                Punto.Fill = Verde;
+                BotonHablar.IsEnabled = true;
+                BotonParar.IsEnabled = false;
                 break;
             case "error":
-                _continuo = false;
-                _transcribiendo = 0;
                 Progreso.Visibility = Visibility.Collapsed;
                 Punto.Fill = Gris;
                 BotonHablar.IsEnabled = true;
@@ -104,13 +87,13 @@ public partial class WidgetWindow
 
     private void Hablar_Click(object sender, RoutedEventArgs e)
     {
-        _continuo = true;
+        BotonHablar.IsEnabled = false; // el estado real lo confirma el evento "listening"
         _principal.EnviarOrden("rec");
     }
 
     private void Parar_Click(object sender, RoutedEventArgs e)
     {
-        _continuo = false;
+        BotonParar.IsEnabled = false;
         _principal.EnviarOrden("stop");
     }
 

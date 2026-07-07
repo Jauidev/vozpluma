@@ -17,6 +17,7 @@ public partial class MainWindow
     private Process? _engine;
     private Storyboard _pulso = null!;
     private bool _listo;
+    private bool _grabando; // el botón de micro está en modo "parar"
     private WidgetWindow? _widget;
     private System.Windows.Forms.NotifyIcon? _bandeja;
     private bool _salir;
@@ -146,13 +147,12 @@ public partial class MainWindow
         var usarWhisper = ModeloCombo.SelectedIndex == 0 ? " whisper" : "";
         var idioma = (string)IdiomaCombo.SelectedItem;
         var aj = Ajustes.Actual;
-        var silencio = aj.SilencioFin.ToString(System.Globalization.CultureInfo.InvariantCulture);
 
         var psi = new ProcessStartInfo
         {
             FileName = python,
             Arguments = $"-u engine.py {idioma}{usarWhisper} --mic={aj.MicIndex}" +
-                        $" --silencio={silencio} --espera={aj.EsperaVoz} --maxseg={aj.MaxSeg}",
+                        $" --maxseg={aj.MaxSeg}",
             WorkingDirectory = raiz,
             UseShellExecute = false,
             CreateNoWindow = true,
@@ -249,24 +249,27 @@ public partial class MainWindow
                     _listo = true;
                     Carga.Visibility = Visibility.Collapsed;
                     BotonMic.Visibility = Visibility.Visible;
+                    Grabar(false);
                     BotonMic.IsEnabled = true;
                     BotonWidget.IsEnabled = true;
                     Estado_($"Listo · {doc.RootElement.GetProperty("model").GetString()}" +
                             $" · {doc.RootElement.GetProperty("mic").GetString()}");
                     break;
                 case "listening":
-                    Grabando(true);
-                    Estado_("Escuchando… habla y se corta solo al callarte");
+                    Grabar(true); // el micrófono pasa a ser botón de parar
+                    BotonMic.IsEnabled = true;
+                    Estado_("Grabando… pulsa el botón para terminar");
                     break;
                 case "transcribing":
-                    Grabando(false);
+                    Grabar(false);
+                    BotonMic.IsEnabled = false;
                     Estado_("Transcribiendo…");
                     break;
                 case "text":
-                    Grabando(false);
+                    Grabar(false);
                     var texto = doc.RootElement.GetProperty("text").GetString() ?? "";
                     if (texto.Length == 0)
-                        Estado_("No se detectó voz — pulsa el micrófono e inténtalo de nuevo");
+                        Estado_("No se grabó voz — pulsa el micrófono e inténtalo de nuevo");
                     else
                     {
                         AgregarTarjeta(texto);
@@ -275,7 +278,7 @@ public partial class MainWindow
                     BotonMic.IsEnabled = true;
                     break;
                 case "error":
-                    Grabando(false);
+                    Grabar(false);
                     Carga.Visibility = Visibility.Collapsed;
                     BotonMic.Visibility = Visibility.Visible;
                     Estado_("Error: " + doc.RootElement.GetProperty("message").GetString(),
@@ -288,8 +291,16 @@ public partial class MainWindow
 
     // ---------- Estado visual "grabando" ----------
 
-    private void Grabando(bool activo)
+    // el mismo botón alterna entre grabar (micro) y parar (stop)
+    private void Grabar(bool activo)
     {
+        _grabando = activo;
+        IconoMic.Symbol = activo
+            ? Wpf.Ui.Controls.SymbolRegular.Stop24
+            : Wpf.Ui.Controls.SymbolRegular.Mic24;
+        BotonMic.ToolTip = activo
+            ? "Pulsa para terminar y transcribir"
+            : "Pulsa y habla — cuando termines, pulsa otra vez para parar";
         if (activo)
             _pulso.Begin();
         else
@@ -303,8 +314,9 @@ public partial class MainWindow
 
     private void BotonMic_Click(object sender, RoutedEventArgs e)
     {
+        // desactiva hasta que el motor confirme el cambio de estado (evita doble clic)
         BotonMic.IsEnabled = false;
-        EnviarOrden("rec");
+        EnviarOrden(_grabando ? "stop" : "rec");
     }
 
     public void EnviarOrden(string orden)

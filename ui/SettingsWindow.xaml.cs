@@ -23,8 +23,6 @@ public partial class SettingsWindow
 
         var a = Ajustes.Actual;
         EspacioCheck.IsChecked = a.EspacioFinal;
-        SilencioSlider.Value = a.SilencioFin;
-        EsperaSlider.Value = a.EsperaVoz;
         MaxSegSlider.Value = a.MaxSeg;
         ActualizarEtiquetas();
 
@@ -75,10 +73,8 @@ public partial class SettingsWindow
 
     private void ActualizarEtiquetas()
     {
-        // aún inicializando el XAML: las etiquetas se crean después de los sliders
-        if (SilencioValor is null || EsperaValor is null || MaxSegValor is null) return;
-        SilencioValor.Text = $"{SilencioSlider.Value:0.0} s";
-        EsperaValor.Text = $"{(int)EsperaSlider.Value} s";
+        // aún inicializando el XAML: la etiqueta se crea después del slider
+        if (MaxSegValor is null) return;
         MaxSegValor.Text = $"{(int)MaxSegSlider.Value} s";
     }
 
@@ -88,8 +84,6 @@ public partial class SettingsWindow
         {
             MicIndex = (int)(((ComboBoxItem?)MicCombo.SelectedItem)?.Tag ?? -1),
             EspacioFinal = EspacioCheck.IsChecked == true,
-            SilencioFin = Math.Round(SilencioSlider.Value, 1),
-            EsperaVoz = (int)EsperaSlider.Value,
             MaxSeg = (int)MaxSegSlider.Value,
             // conserva lo elegido en la ventana principal
             Idioma = Ajustes.Actual.Idioma,

@@ -159,43 +159,29 @@ class MicrofonoContinuo:
         except queue.Empty:
             pass
 
-    def escuchar(self, max_seg=60, silencio_fin=0.9, espera_voz=10,
-                 stop_event=None):
-        """Espera voz, graba hasta el silencio y devuelve el audio procesado."""
+    def escuchar(self, max_seg=300, stop_event=None):
+        """Graba hasta que se pulse parar (stop_event) o se alcance max_seg,
+        sin cortar por silencio: la frase la termina el usuario, no una pausa.
+        Devuelve el audio recortado al tramo con voz."""
         self._vaciar()  # descarta lo acumulado mientras no escuchábamos
 
         frames, niveles = [], []
-        if self.umbral is None:  # solo calibra la primera vez
+        if self.umbral is None:  # calibra el ruido de fondo la primera vez
             frames = [self.bloques.get() for _ in range(5)]
             niveles = [float(np.abs(b).max()) for b in frames]
             piso = float(np.median(niveles))
             self.umbral = min(max(4 * piso, 0.012), 0.035)
         umbral = self.umbral
 
-        hablando = False
-        silencio = 0.0
-        espera = []
         inicio = time.time()
         while True:
-            bloque = self.bloques.get()
-            frames.append(bloque)
-            nivel = float(np.abs(bloque).max())
-            niveles.append(nivel)
             if stop_event is not None and stop_event.is_set():
                 break
-            if not hablando:
-                espera.append(nivel)
-                if nivel > umbral:
-                    hablando = True
-                elif time.time() - inicio > espera_voz:
-                    # recalibra con el ambiente observado durante la espera
-                    piso = float(np.median(espera))
-                    self.umbral = min(max(4 * piso, 0.012), 0.035)
-                    break
-            else:
-                silencio = silencio + self.dur_bloque if nivel < 0.7 * umbral else 0.0
-                if silencio >= silencio_fin or time.time() - inicio > max_seg:
-                    break
+            bloque = self.bloques.get()
+            frames.append(bloque)
+            niveles.append(float(np.abs(bloque).max()))
+            if time.time() - inicio > max_seg:
+                break
 
         return _procesar(frames, niveles, umbral, self.rate)
 

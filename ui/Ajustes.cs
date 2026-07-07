@@ -13,9 +13,8 @@ public class Ajustes
     public bool UsarWhisper { get; set; } = true;
 
     // --- Rendimiento ---
-    public double SilencioFin { get; set; } = 0.9; // seg. de silencio que cortan la frase
-    public int EsperaVoz { get; set; } = 10;       // seg. esperando voz antes de rendirse
-    public int MaxSeg { get; set; } = 60;          // duración máxima de una frase
+    // La grabación la paras tú; esto es solo un tope de seguridad.
+    public int MaxSeg { get; set; } = 300;         // duración máxima de una grabación
 
     private static string Ruta =>
         Path.Combine(MainWindow.RaizProyecto(), "ajustes.json");
