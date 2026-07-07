@@ -100,6 +100,8 @@ def main():
     threading.Thread(target=transcriptor, daemon=True).start()
 
     # hilo lector: "stop" activa el evento al instante aunque se esté grabando
+    # y vacía las "rec" pendientes — una sola pulsación de parar cancela
+    # también las re-escuchas que la interfaz ya hubiera encolado
     ordenes = queue.Queue()
     parar = threading.Event()
 
@@ -107,8 +109,17 @@ def main():
         for linea in sys.stdin:
             orden = linea.strip().lower()
             if orden == "stop":
+                try:
+                    while True:
+                        ordenes.get_nowait()
+                except queue.Empty:
+                    pass
                 parar.set()
             else:
+                if orden == "rec":
+                    # limpiar aquí (y no en el bucle principal) conserva el
+                    # orden rec/stop: un stop posterior nunca se pierde
+                    parar.clear()
                 ordenes.put(orden)
         ordenes.put("quit")
 
@@ -123,7 +134,6 @@ def main():
         if orden != "rec":
             continue
         try:
-            parar.clear()
             emitir("listening")
             with contextlib.redirect_stdout(sys.stderr):
                 audio = mic.escuchar(max_seg=maxseg, silencio_fin=silencio,
