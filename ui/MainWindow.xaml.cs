@@ -136,6 +136,8 @@ public partial class MainWindow
     {
         _listo = false;
         BotonMic.IsEnabled = false;
+        BotonMic.Visibility = Visibility.Collapsed;
+        Carga.Visibility = Visibility.Visible;
         BotonWidget.IsEnabled = false;
         Estado_("Cargando el modelo en memoria… (solo se descarga la primera vez)");
 
@@ -216,6 +218,8 @@ public partial class MainWindow
             {
                 case "ready":
                     _listo = true;
+                    Carga.Visibility = Visibility.Collapsed;
+                    BotonMic.Visibility = Visibility.Visible;
                     BotonMic.IsEnabled = true;
                     BotonWidget.IsEnabled = true;
                     Estado_($"Listo · {doc.RootElement.GetProperty("model").GetString()}" +
@@ -243,6 +247,8 @@ public partial class MainWindow
                     break;
                 case "error":
                     Grabando(false);
+                    Carga.Visibility = Visibility.Collapsed;
+                    BotonMic.Visibility = Visibility.Visible;
                     Estado_("Error: " + doc.RootElement.GetProperty("message").GetString(),
                             esError: true);
                     BotonMic.IsEnabled = _listo;

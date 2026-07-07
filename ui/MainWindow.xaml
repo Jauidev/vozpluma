@@ -129,6 +129,11 @@
                                ToolTip="Pulsa y habla — se corta solo al callarte">
                         <ui:SymbolIcon Symbol="Mic24" FontSize="28" />
                     </ui:Button>
+
+                    <!-- sustituye al micrófono mientras el modelo se carga -->
+                    <ui:ProgressRing x:Name="Carga" Width="48" Height="48"
+                                     IsIndeterminate="True" Visibility="Collapsed"
+                                     HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </Grid>
             </StackPanel>
         </Grid>
