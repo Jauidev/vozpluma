@@ -1,84 +1,84 @@
 # VozPluma
 
-**English** · [Español](README.es.md)
+Dictado por voz **100% local** para Windows: habla y el texto se escribe solo en cualquier aplicación — chats, Word, el navegador, tu editor de código. Tu voz nunca sale de tu ordenador.
 
-**100% local** voice dictation for Windows: speak and the text types itself into any application — chats, Word, your browser, your code editor. Your voice never leaves your computer.
+## Características
 
-## Features
+- **Transcripción local con IA**: Whisper en cinco tamaños — de `tiny` (el más rápido) a `large-v3-turbo` (máxima calidad) — o NVIDIA Nemotron 3.5 ASR, se cambia desde la interfaz
+- **Modo widget**: pastilla flotante que escribe lo que dictas directamente donde esté el cursor, en cualquier app, sin robar el foco
+- **Tú controlas la grabación**: pulsa para empezar, habla a tu ritmo — con las pausas que quieras — y pulsa otra vez para parar y transcribir; sin cortes automáticos por silencio
+- **7 idiomas**: español, inglés, francés, alemán, italiano, portugués y árabe
+- **Instalación sin pasos**: abres el exe y el primer arranque instala Python y todas las dependencias por sí solo, con barra de progreso — sin scripts que ejecutar
+- **Atajo de teclado global** (Ctrl+Alt+D por defecto): empieza o para el dictado desde cualquier aplicación, incluso con VozPluma oculto
+- **Interfaz Windows 11** (WPF + tema Fluent con Mica) con ajustes de **General**, **Inicio** (arrancar con Windows, abrir en modo widget) y **Rendimiento**
+- **Funciona en cualquier PC y con cualquier gráfica**: NVIDIA (CUDA), **AMD e Intel (DirectML)** o solo CPU — el modo *automático* elige la mejor disponible; el modelo se calienta al cargar para que hasta la primera transcripción sea instantánea
+- **Ligero en segundo plano**: tras un tiempo de inactividad configurable el motor entra en reposo y libera los GB que ocupa el modelo; pulsar el micro o el atajo lo despierta
+- **Cerrar es cerrar**: al salir de la app se libera toda la memoria — nada queda en segundo plano
+- **Privado por diseño**: sin nube, sin cuentas, sin telemetría — internet solo para descargar los modelos la primera vez
 
-- **Local AI transcription**: NVIDIA Nemotron 3.5 ASR (fast, lightweight) or Whisper large-v3-turbo in int8 (best quality) — switchable from the UI
-- **Widget mode**: a floating pill that types what you dictate right where your cursor is, in any app, without stealing focus
-- **You control the recording**: press to start, speak at your own pace — pauses included — and press again to stop and transcribe; no silence-based auto-cutoff
-- **7 languages**: Spanish, English, French, German, Italian, Portuguese and Arabic
-- **Windows 11 interface** (WPF + Fluent theme with Mica) with separate **General** (microphone, behavior) and **Performance** settings
-- **Runs on any PC**: accelerated with an NVIDIA GPU; without one (or with AMD/Intel) there is a **CPU mode** that uses all cores and skips the GPU probing for faster startup
-- **Closes for real**: quitting the app frees all memory — nothing stays running in the background
-- **Private by design**: no cloud, no accounts, no telemetry — internet is only needed to download the models the first time
+## Instalación rápida (usuarios)
 
-## Quick install (users)
+1. Descarga `VozPluma-v1.2.0.zip` desde [Releases](https://github.com/Jauidev/vozpluma/releases) y descomprímelo
+2. Abre `VozPluma.exe` — **y ya está**. La primera vez instala Python y todas las dependencias por sí sola, con una barra de progreso, y después descarga el modelo de voz (~1.5 GB). Todo esto ocurre una sola vez; los siguientes arranques van directos a la app.
 
-1. Download `VozPluma-v1.1.0.zip` from [Releases](https://github.com/Jauidev/vozpluma/releases) and unzip it
-2. Double-click `instalar.bat` — it installs Python and all dependencies by itself
-   (if it says it just installed Python, close it and run it again: only happens the first time)
-3. Open `VozPluma.exe` — the first run downloads the speech model (~1.5 GB)
-
-The unzipped package looks like this:
+El paquete descomprimido queda así:
 
 ```
 VozPluma\
-├── VozPluma.exe        ← the app (self-contained, no .NET required)
-├── instalar.bat        ← run this first, once
-├── LEEME.txt           ← instructions and troubleshooting (Spanish)
+├── VozPluma.exe        ← la aplicación (autocontenida, no necesita .NET)
+├── instalar.bat        ← opcional: instalador manual, solo si falla el automático
+├── LEEME.txt           ← instrucciones y solución de problemas
 ├── engine.py, talk.py, transcribe.py
 └── requirements.txt
 ```
 
-**Requirements**: Windows 10/11 x64 · 8 GB RAM · No GPU needed: it runs on any PC using the CPU. If you have an **NVIDIA GPU** it is used automatically and runs much faster (AMD/Intel cards don't accelerate — with those it runs on CPU as well).
+**Requisitos**: Windows 10/11 x64 · 8 GB RAM · No necesita gráfica: funciona en cualquier PC usando el procesador. Las **GPU NVIDIA** se usan automáticamente (CUDA); las **AMD e Intel** aceleran Whisper mediante DirectML (el instalador lo configura cuando no detecta NVIDIA).
 
-## Install from source (developers)
+## Instalación desde el código (desarrolladores)
 
 ```bat
 git clone https://github.com/Jauidev/vozpluma.git
 cd vozpluma
 instalar.bat
-:: the UI needs the .NET 9 SDK to build:
+:: la interfaz necesita el SDK de .NET 9 para compilar:
 dotnet build ui\VoiceAgent.csproj -c Release
 ```
 
-You can also use the engine without the GUI:
+También puedes usar el motor sin interfaz gráfica:
 
 ```bat
-.venv\Scripts\python.exe talk.py es-ES          :: console dictation (Nemotron)
-.venv\Scripts\python.exe talk.py es-ES whisper  :: with Whisper int8
-.venv\Scripts\python.exe transcribe.py audio.mp3 es-ES  :: transcribe a file
+.venv\Scripts\python.exe talk.py es-ES          :: dictado en consola (Nemotron)
+.venv\Scripts\python.exe talk.py es-ES whisper  :: con Whisper int8
+.venv\Scripts\python.exe transcribe.py audio.mp3 es-ES  :: transcribir un archivo
 ```
 
-## Architecture
+## Arquitectura
 
 ```
-┌─────────────────────┐   JSON over stdin/stdout  ┌──────────────────────┐
+┌─────────────────────┐   JSON por stdin/stdout   ┌──────────────────────┐
 │  VozPluma.exe       │ ◄───────────────────────► │  engine.py           │
 │  C# WPF (Fluent)    │   rec / stop / quit       │  Python              │
-│  · main window      │   ready / listening /     │  · audio capture     │
-│  · floating widget  │   transcribing / text     │  · energy-based VAD  │
-│  · settings         │                           │  · Nemotron / Whisper│
-│  · SendInput Unicode│                           │  · persistent mic    │
+│  · ventana principal│   ready / listening /     │  · captura de audio  │
+│  · widget flotante  │   transcribing / text     │  · VAD por energía   │
+│  · ajustes          │                           │  · Nemotron / Whisper│
+│  · SendInput Unicode│                           │  · mic persistente   │
 └─────────────────────┘                           └──────────────────────┘
 ```
 
-- The widget uses `WS_EX_NOACTIVATE` to never steal focus and `SendInput` with Unicode characters to type into the active app
-- The engine keeps the microphone open between recordings and transcribes on a separate thread; recording runs until you press stop (with a configurable safety cap)
-- Recordings are trimmed to the voiced segment before transcription to prevent the model from hallucinating words out of noise
-- Settings are stored in `ajustes.json` and passed to the engine as arguments (`--mic`, `--maxseg`, `--cpu`)
+- El widget usa `WS_EX_NOACTIVATE` para no robar el foco y `SendInput` con caracteres Unicode para escribir en la app activa
+- El motor mantiene el micrófono abierto entre grabaciones y transcribe en un hilo aparte; la grabación dura hasta que pulsas parar (con un tope de seguridad configurable)
+- La grabación se recorta al segmento con voz antes de transcribir para evitar alucinaciones del modelo sobre el ruido
+- Los ajustes se guardan en `ajustes.json` y se pasan al motor como argumentos (`--mic`, `--maxseg`, `--wmodel`, `--accel`)
+- El acelerador se elige en Ajustes: automático (CUDA → DirectML → CPU), NVIDIA, AMD/Intel o CPU; DirectML ejecuta Whisper con ONNX Runtime y pesos fp16 (los fp32 dan texto basura en algunas GPU)
 
-## Roadmap
+## Hoja de ruta
 
-- [ ] AMD and Intel GPU acceleration (via whisper.cpp/Vulkan or DirectML); today those GPUs run on CPU
-- [ ] macOS and Linux support (the Python engine is already cross-platform; the UI and text injection need porting)
-- [ ] Spoken replies: connect the transcription to an LLM and read the answer out loud
+- [x] Aceleración en gráficas AMD e Intel vía DirectML *(disponible desde la v1.2.0)*
+- [ ] Soporte para macOS y Linux (el motor Python ya es multiplataforma; falta portar la interfaz y la escritura en otras apps)
+- [ ] Respuestas habladas: conectar la transcripción a un LLM y leer la respuesta en voz alta
 
-Ideas or contributions? Open an issue or a pull request.
+¿Ideas o contribuciones? Abre un issue o un pull request.
 
-## License
+## Licencia
 
-MIT — see [LICENSE](LICENSE). Models are downloaded from Hugging Face under their own licenses: [Nemotron 3.5 ASR](https://huggingface.co/nvidia/nemotron-3.5-asr-streaming-0.6b) (NVIDIA Open Model License) and [Whisper](https://huggingface.co/openai/whisper-large-v3-turbo) (MIT).
+MIT — ver [LICENSE](LICENSE). Los modelos se descargan de Hugging Face bajo sus propias licencias: [Nemotron 3.5 ASR](https://huggingface.co/nvidia/nemotron-3.5-asr-streaming-0.6b) (NVIDIA Open Model License) y [Whisper](https://huggingface.co/openai/whisper-large-v3-turbo) (MIT).

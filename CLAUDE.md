@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-VozPluma — local voice dictation for Windows. Public repo: https://github.com/Jauidev/vozpluma (Release v1.0 published). The user communicates in Spanish; UI strings, code comments, and commit messages are in Spanish. README.md is English; README.es.md is the Spanish version — update both.
+VozPluma — local voice dictation for Windows. Public repo: https://github.com/Jauidev/vozpluma (Release v1.0 published). The user communicates in Spanish; UI strings, code comments, and commit messages are in Spanish. README.md is Spanish-only (the English README was removed in v1.2.0).
 
 **Anonymity requirement**: never commit with the user's real name or email. Always commit as `git -c user.name="VozPluma" -c user.email="vozpluma@users.noreply.github.com" commit ...`. Never ship `.pdb` files in the distributable (they embed local paths with the username).
 
