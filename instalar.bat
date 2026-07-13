@@ -28,8 +28,10 @@ if not exist ".venv" (
 )
 
 rem ---- 3. Instalar PyTorch (con CUDA si hay GPU NVIDIA) ----
+set "HAY_NVIDIA=1"
 nvidia-smi >nul 2>nul
 if errorlevel 1 (
+    set "HAY_NVIDIA="
     echo No se detecta GPU NVIDIA: instalando PyTorch para CPU...
     .venv\Scripts\python.exe -m pip install torch torchaudio
 ) else (
@@ -43,6 +45,14 @@ echo Instalando dependencias de audio y modelos...
 .venv\Scripts\python.exe -m pip install --upgrade pip >nul
 .venv\Scripts\python.exe -m pip install -r requirements.txt
 if errorlevel 1 goto :error
+
+rem ---- 5. Sin NVIDIA: soporte DirectML (acelera Whisper en GPU AMD/Intel) ----
+if not defined HAY_NVIDIA (
+    echo Instalando soporte DirectML para GPU AMD/Intel...
+    .venv\Scripts\python.exe -m pip uninstall -y onnxruntime >nul 2>nul
+    .venv\Scripts\python.exe -m pip install onnxruntime-directml optimum-onnx
+    if errorlevel 1 echo Aviso: DirectML no se pudo instalar; se usara la CPU.
+)
 
 echo.
 echo ============================================

@@ -186,14 +186,72 @@ class MicrofonoContinuo:
         return _procesar(frames, niveles, umbral, self.rate)
 
 
-def cargar_transcriptor(usar_whisper, language, forzar_cpu=False):
-    """Devuelve una función audio->texto con el modelo elegido.
-    forzar_cpu: carga directo en CPU con todos los núcleos (equipos sin
-    gráfica NVIDIA; también evita el intento de CUDA, que retrasa la carga)."""
+def _whisper_directml(modelo, idioma):
+    """Whisper vía ONNX Runtime con DirectML: acelera en cualquier GPU
+    DirectX 12 (AMD, Intel o NVIDIA). Requiere los paquetes opcionales
+    onnxruntime-directml y optimum-onnx (ver instalar.bat)."""
+    import onnxruntime
+    if "DmlExecutionProvider" not in onnxruntime.get_available_providers():
+        raise RuntimeError(
+            "onnxruntime-directml no está instalado (pip install "
+            "onnxruntime-directml optimum-onnx)")
+    from optimum.onnxruntime import ORTModelForSpeechSeq2Seq
+    from transformers import AutoProcessor, GenerationConfig
+
+    # pesos ONNX ya exportados; el de medium tiene otro nombre de repo
+    repo = ("onnx-community/whisper-medium-ONNX" if modelo == "medium"
+            else f"onnx-community/whisper-{modelo}")
+    print(f"Cargando {repo} con DirectML...")
+    # SIEMPRE los pesos fp16: el grafo fp32 produce texto basura en DirectML
+    # (comprobado en una GTX 1650; fp16 e int8 transcriben perfecto)
+    model = ORTModelForSpeechSeq2Seq.from_pretrained(
+        repo, subfolder="onnx", provider="DmlExecutionProvider",
+        encoder_file_name="encoder_model_fp16.onnx",
+        decoder_file_name="decoder_model_merged_fp16.onnx")
+    processor = AutoProcessor.from_pretrained(repo)
+    # el generation_config del repo ONNX es antiguo (sin lang_to_id) y
+    # transformers 5 lo rechaza; el del repo oficial de openai sí vale
+    model.generation_config = GenerationConfig.from_pretrained(
+        f"openai/whisper-{modelo}")
+
+    def transcribir(audio):
+        entrada = processor(audio, sampling_rate=MODEL_SR, return_tensors="pt")
+        ids = model.generate(entrada.input_features,
+                             language=idioma, task="transcribe")
+        return processor.batch_decode(ids, skip_special_tokens=True)[0].strip()
+
+    return f"Whisper {modelo} (DirectML)", transcribir
+
+
+def _calentar(transcribir):
+    """Primera inferencia con audio mudo: compila los kernels de la GPU.
+    Sin esto la primera transcripción real tardaba decenas de segundos
+    (el usuario lo notaba sobre todo en el widget)."""
+    print("Calentando el modelo (primera inferencia)...")
+    try:
+        transcribir(np.zeros(MODEL_SR, dtype="float32"))
+    except Exception as e:
+        print(f"(aviso: el calentamiento falló: {e})")
+
+
+def cargar_transcriptor(usar_whisper, language, acelerador="auto",
+                        modelo_whisper="large-v3-turbo"):
+    """Devuelve (nombre, función audio->texto) con el modelo elegido.
+    acelerador: "auto" (CUDA -> DirectML -> CPU), "cuda" (NVIDIA),
+    "dml" (AMD/Intel/NVIDIA vía DirectML, solo Whisper) o "cpu".
+    modelo_whisper: tiny | base | small | medium | large-v3-turbo."""
     if usar_whisper:
         import os
         hilos = os.cpu_count() or 4
-        if not forzar_cpu:
+        idioma = language.split("-")[0]
+
+        # --- DirectML (GPUs AMD/Intel; también funciona en NVIDIA) ---
+        if acelerador == "dml":
+            nombre, transcribir = _whisper_directml(modelo_whisper, idioma)
+            _calentar(transcribir)
+            return nombre, transcribir
+
+        if acelerador in ("auto", "cuda"):
             import importlib.util
             # ctranslate2 necesita las DLL de CUDA que trae torch; localizamos
             # la carpeta sin importar torch (importarlo tarda ~10 s y no hace falta)
@@ -201,29 +259,64 @@ def cargar_transcriptor(usar_whisper, language, forzar_cpu=False):
             if spec and spec.submodule_search_locations:
                 os.add_dll_directory(
                     os.path.join(spec.submodule_search_locations[0], "lib"))
+
         from faster_whisper import WhisperModel
-        if forzar_cpu:
-            fw = WhisperModel("large-v3-turbo", device="cpu",
-                              compute_type="int8", cpu_threads=hilos)
-        else:
+        fw = None
+        etiqueta = "CPU"
+        if acelerador in ("auto", "cuda"):
             # int8: ~1.4 GB de VRAM y misma calidad; fp16 puro da basura en la GTX 1650
             try:
-                fw = WhisperModel("large-v3-turbo", device="cuda",
+                fw = WhisperModel(modelo_whisper, device="cuda",
                                   compute_type="int8_float32")
+                etiqueta = "CUDA"
             except Exception:
-                # sin GPU NVIDIA utilizable: CPU en int8 (más lento pero funciona)
-                fw = WhisperModel("large-v3-turbo", device="cpu",
+                fw = None
+        if fw is None and acelerador == "auto":
+            # sin NVIDIA: probamos DirectML (AMD/Intel) si está instalado
+            try:
+                nombre, transcribir = _whisper_directml(modelo_whisper, idioma)
+                _calentar(transcribir)
+                return nombre, transcribir
+            except Exception as e:
+                print(f"DirectML no disponible ({e}); usando CPU")
+        if fw is None:
+            fw = WhisperModel(modelo_whisper, device="cpu",
+                              compute_type="int8", cpu_threads=hilos)
+            etiqueta = "CPU"
+
+        # calentar sin VAD: con audio mudo el VAD se saltaría el modelo
+        def calentar_fw(m):
+            print("Calentando el modelo (primera inferencia)...")
+            segs, _ = m.transcribe(np.zeros(MODEL_SR, dtype="float32"),
+                                   language=idioma, vad_filter=False)
+            list(segs)  # transcribe es perezoso: hay que consumir los segmentos
+
+        try:
+            calentar_fw(fw)
+        except Exception as e:
+            if etiqueta == "CUDA" and acelerador == "auto":
+                # la GPU cargó pero no infiere (VRAM, drivers…): a CPU
+                print(f"La GPU falló al inferir ({e}); usando CPU")
+                fw = WhisperModel(modelo_whisper, device="cpu",
                                   compute_type="int8", cpu_threads=hilos)
-        idioma = language.split("-")[0]
+                etiqueta = "CPU"
+                calentar_fw(fw)
+            else:
+                print(f"(aviso: el calentamiento falló: {e})")
 
         def transcribir(audio):
             # vad_filter descarta tramos sin voz: evita palabras inventadas en el ruido
             segments, _ = fw.transcribe(audio, language=idioma, vad_filter=True)
             return " ".join(s.text.strip() for s in segments)
 
-        etiqueta = ", CPU" if forzar_cpu else ""
-        return f"Whisper large-v3-turbo (int8{etiqueta})", transcribir
+        return f"Whisper {modelo_whisper} (int8, {etiqueta})", transcribir
 
+    # --- Nemotron (transformers/torch: CUDA o CPU; DirectML no aplica) ---
+    if acelerador == "dml":
+        print("Nemotron no soporta DirectML; se usará CPU (elige Whisper "
+              "para aprovechar una GPU AMD/Intel)")
+        acelerador = "cpu"
+    forzar_cpu = acelerador == "cpu"
     from transformers import AutoModelForRNNT, AutoProcessor
     processor = AutoProcessor.from_pretrained(MODEL_ID)
     model = AutoModelForRNNT.from_pretrained(
@@ -235,6 +328,7 @@ def cargar_transcriptor(usar_whisper, language, forzar_cpu=False):
         output = model.generate(**inputs, return_dict_in_generate=True)
         return processor.decode(output.sequences, skip_special_tokens=True)[0].strip()
 
+    _calentar(transcribir)
     return "Nemotron 3.5 ASR 0.6B" + (" (CPU)" if forzar_cpu else ""), transcribir
 
 
