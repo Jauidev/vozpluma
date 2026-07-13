@@ -17,9 +17,9 @@ public static class Program
             return;
         }
 
-        // instancia única: si ya hay un VozPluma corriendo (aunque esté en la
-        // bandeja), le pedimos que muestre su ventana y salimos — así nunca se
-        // carga el modelo dos veces
+        // instancia única: si ya hay un VozPluma corriendo (aunque esté oculto
+        // en modo widget), le pedimos que muestre su ventana y salimos — así
+        // nunca se carga el modelo dos veces
         using var unico = new Mutex(true, "VozPlumaApp", out bool somosPrimeros);
         var mostrar = new EventWaitHandle(false, EventResetMode.AutoReset, "VozPlumaMostrar");
         if (!somosPrimeros)

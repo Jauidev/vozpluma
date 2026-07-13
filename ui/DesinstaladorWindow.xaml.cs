@@ -38,7 +38,7 @@ public partial class DesinstaladorWindow
         });
         if (libre is null)
         {
-            Estado.Text = "VozPluma sigue abierto. Ciérralo (bandeja → Salir) y vuelve a intentarlo.";
+            Estado.Text = "VozPluma sigue abierto. Cierra su ventana y vuelve a intentarlo.";
             BotonDesinstalar.IsEnabled = true;
             BotonCancelar.IsEnabled = true;
             return;
@@ -47,14 +47,19 @@ public partial class DesinstaladorWindow
         var cacheHub = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
             ".cache", "huggingface", "hub");
-        var objetivos = new (string ruta, string nombre)[]
-        {
-            (Path.Combine(cacheHub, "models--nvidia--nemotron-3.5-asr-streaming-0.6b"), "modelo Nemotron"),
-            (Path.Combine(cacheHub, "models--openai--whisper-large-v3-turbo"), "modelo Whisper"),
-            (Path.Combine(cacheHub, "models--mobiuslabsgmbh--faster-whisper-large-v3-turbo"), "modelo Whisper (int8)"),
-            (Path.Combine(_raiz, ".venv"), "entorno de Python"),
-            (Path.Combine(_raiz, "__pycache__"), "archivos temporales"),
-        };
+        // por patrón y no con una lista fija: cubre los cinco tamaños de Whisper
+        // (Systran/mobiuslabs), sus variantes ONNX de DirectML y Nemotron
+        var objetivos = new List<(string ruta, string nombre)>();
+        if (Directory.Exists(cacheHub))
+            foreach (var d in Directory.GetDirectories(cacheHub))
+            {
+                var n = Path.GetFileName(d).ToLowerInvariant();
+                if (n.Contains("whisper") || n.Contains("nemotron"))
+                    objetivos.Add((d, "modelo " + Path.GetFileName(d)
+                        .Replace("models--", "").Replace("--", "/")));
+            }
+        objetivos.Add((Path.Combine(_raiz, ".venv"), "entorno de Python"));
+        objetivos.Add((Path.Combine(_raiz, "__pycache__"), "archivos temporales"));
 
         foreach (var (ruta, nombre) in objetivos)
         {

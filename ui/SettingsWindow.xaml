@@ -95,7 +95,7 @@
                             <ComboBoxItem Content="GPU AMD o Intel (DirectML)" Tag="dml" />
                             <ComboBoxItem Content="Solo CPU" Tag="cpu" />
                         </ComboBox>
-                        <TextBlock Text="Automática prueba NVIDIA, luego AMD/Intel y por último la CPU. DirectML solo acelera Whisper y necesita instalar el soporte opcional (instalar.bat lo ofrece); Nemotron sin NVIDIA usa la CPU."
+                        <TextBlock Text="Automática prueba NVIDIA, luego AMD/Intel y por último la CPU. DirectML solo acelera Whisper (la instalación automática añade su soporte al no detectar NVIDIA); Nemotron sin NVIDIA usa la CPU."
                                    FontSize="11" TextWrapping="Wrap" Margin="0,2,0,16"
                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
 

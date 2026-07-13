@@ -33,7 +33,7 @@
                 <ui:SymbolIcon Symbol="Stop24" FontSize="16" />
             </ui:Button>
 
-            <!-- girando = transcribiendo; desaparece cuando el texto ya está escrito -->
+            <!-- girando = motor cargando o transcribiendo; desaparece al terminar -->
             <ui:ProgressRing x:Name="Progreso" Width="22" Height="22"
                              IsIndeterminate="True" Visibility="Collapsed"
                              Margin="0,0,8,0" VerticalAlignment="Center" />

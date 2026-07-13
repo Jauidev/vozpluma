@@ -189,7 +189,7 @@ class MicrofonoContinuo:
 def _whisper_directml(modelo, idioma):
     """Whisper vía ONNX Runtime con DirectML: acelera en cualquier GPU
     DirectX 12 (AMD, Intel o NVIDIA). Requiere los paquetes opcionales
-    onnxruntime-directml y optimum-onnx (ver instalar.bat)."""
+    onnxruntime-directml y optimum-onnx (la app los instala al no detectar NVIDIA)."""
     import onnxruntime
     if "DmlExecutionProvider" not in onnxruntime.get_available_providers():
         raise RuntimeError(

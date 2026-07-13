@@ -53,7 +53,7 @@
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
                             VerticalAlignment="Top">
                     <ui:Button x:Name="BotonWidget" Padding="10,6" FontSize="12"
-                               Margin="0,0,8,0" IsEnabled="False"
+                               Margin="0,0,8,0"
                                Click="BotonWidget_Click"
                                ToolTip="Widget flotante: dicta en cualquier aplicación">
                         <StackPanel Orientation="Horizontal">

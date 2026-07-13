@@ -1,5 +1,5 @@
 # Dependencias del Agente de Voz (Python 3.11+)
-# PyTorch se instala aparte con soporte CUDA — ver instalar.bat
+# PyTorch se instala aparte con soporte CUDA — lo hace la propia app en el primer arranque
 # GPU AMD/Intel (opcional): pip uninstall onnxruntime && pip install onnxruntime-directml optimum-onnx
 transformers>=5.13.0
 accelerate

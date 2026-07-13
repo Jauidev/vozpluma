@@ -73,7 +73,16 @@ public partial class MainWindow
         Loaded += (_, _) =>
         {
             if (File.Exists(Path.Combine(RaizProyecto(), ".venv", "Scripts", "python.exe")))
+            {
                 IniciarMotor();
+                // arrancar directo en modo widget: se abre ya, con el círculo de
+                // carga girando, y el punto se pone verde cuando el motor está listo
+                if (Ajustes.Actual.AbrirEnWidget && !_autoWidgetHecho)
+                {
+                    _autoWidgetHecho = true;
+                    BotonWidget_Click(this, new RoutedEventArgs());
+                }
+            }
             else
                 _ = InstalarAsync();
         };
@@ -110,14 +119,20 @@ public partial class MainWindow
             ?? throw new FileNotFoundException("No se encontró engine.py subiendo desde " + origen);
     }
 
+    /// El motor existe pero aún no ha emitido "ready" (cargando el modelo).
+    public bool MotorCargando => _engine is not null && !_listo;
+
+    /// El motor está cargado y puede dictar.
+    public bool MotorListo => _listo;
+
     private void IniciarMotor()
     {
         _listo = false;
         BotonMic.IsEnabled = false;
         BotonMic.Visibility = Visibility.Collapsed;
         Carga.Visibility = Visibility.Visible;
-        BotonWidget.IsEnabled = false;
         Estado_("Cargando el modelo en memoria… (solo se descarga la primera vez)");
+        MotorEvento?.Invoke("cargando", null); // el widget muestra su círculo de carga
 
         var raiz = RaizProyecto();
         var python = Path.Combine(raiz, ".venv", "Scripts", "python.exe");
@@ -148,6 +163,7 @@ public partial class MainWindow
         catch (Exception e)
         {
             Estado_("Error al iniciar el motor: " + e.Message, esError: true);
+            MotorEvento?.Invoke("error", e.Message); // que el widget no se quede cargando
             return;
         }
 
@@ -193,8 +209,8 @@ public partial class MainWindow
         BotonMic.IsEnabled = false;
         BotonMic.Visibility = Visibility.Collapsed;
         Carga.Visibility = Visibility.Visible;
-        BotonWidget.IsEnabled = false;
         Estado_("Cambiando…");
+        MotorEvento?.Invoke("cargando", null);
 
         var viejo = _engine;
         _engine = null;
@@ -236,13 +252,6 @@ public partial class MainWindow
                     BotonWidget.IsEnabled = true;
                     Estado_($"Listo · {doc.RootElement.GetProperty("model").GetString()}" +
                             $" · {doc.RootElement.GetProperty("mic").GetString()}");
-                    // arrancar directo en modo widget (solo la primera vez, no
-                    // al despertar del reposo ni al cambiar de modelo)
-                    if (Ajustes.Actual.AbrirEnWidget && !_autoWidgetHecho && _widget is null)
-                    {
-                        _autoWidgetHecho = true;
-                        BotonWidget_Click(this, new RoutedEventArgs());
-                    }
                     break;
                 case "listening":
                     Grabar(true); // el micrófono pasa a ser botón de parar
@@ -466,7 +475,7 @@ public partial class MainWindow
         MotorEvento?.Invoke("reposo", null);
     }
 
-    // ---------- Instalación integrada (primer arranque, sin instalar.bat) ----------
+    // ---------- Instalación integrada (primer arranque, sin scripts) ----------
 
     private bool _instalando;
 
@@ -478,6 +487,7 @@ public partial class MainWindow
         BarraInstalacion.Visibility = Visibility.Visible;
         ModeloCombo.IsEnabled = IdiomaCombo.IsEnabled = false;
         BotonAjustes.IsEnabled = false;
+        BotonWidget.IsEnabled = false; // sin motor no hay nada que dictar
         try
         {
             var raiz = RaizProyecto();
@@ -504,23 +514,34 @@ public partial class MainWindow
             Progreso_(20, "Detectando la gráfica…");
             var hayNvidia = await EjecutarAsync("nvidia-smi", "", null) == 0;
 
-            Progreso_(24, hayNvidia
-                ? "Descargando PyTorch con CUDA (~3 GB, puede tardar varios minutos)…"
+            // uv descarga e instala los paquetes en paralelo: tarda una fracción
+            // de lo que tarda pip con PyTorch; si no se pudiera instalar, Pip()
+            // vuelve a pip y la instalación funciona igual (solo más lenta)
+            Progreso_(22, "Preparando el instalador rápido…");
+            await EjecutarAsync(venvPy, "-m pip install uv", raiz, 22, 26);
+            var uv = Path.Combine(raiz, ".venv", "Scripts", "uv.exe");
+            _uv = File.Exists(uv) ? uv : null;
+
+            Progreso_(26, hayNvidia
+                ? "Descargando PyTorch con CUDA (~3 GB, puede tardar unos minutos)…"
                 : "Descargando PyTorch para CPU…");
-            await EjecutarOFallar(venvPy, "-m pip install torch torchaudio" +
-                (hayNvidia ? " --index-url https://download.pytorch.org/whl/cu126" : ""),
-                raiz, 24, 62);
+            var torch = Pip(venvPy, "install torch torchaudio" +
+                (hayNvidia ? " --index-url https://download.pytorch.org/whl/cu126" : ""));
+            await EjecutarOFallar(torch.exe, torch.args, raiz, 26, 62);
 
             Progreso_(62, "Instalando dependencias de audio y modelos…");
-            await EjecutarOFallar(venvPy, "-m pip install -r requirements.txt",
-                raiz, 62, 88);
+            var deps = Pip(venvPy, "install -r requirements.txt");
+            await EjecutarOFallar(deps.exe, deps.args, raiz, 62, 88);
 
             if (!hayNvidia)
             {
                 Progreso_(88, "Añadiendo soporte para GPU AMD/Intel (DirectML)…");
-                await EjecutarAsync(venvPy, "-m pip uninstall -y onnxruntime", raiz);
-                await EjecutarAsync(venvPy,
-                    "-m pip install onnxruntime-directml optimum-onnx", raiz, 90, 98);
+                if (_uv is not null) // uv no lleva -y (nunca pregunta); pip sí
+                    await EjecutarAsync(_uv, "pip uninstall onnxruntime", raiz);
+                else
+                    await EjecutarAsync(venvPy, "-m pip uninstall -y onnxruntime", raiz);
+                var dml = Pip(venvPy, "install onnxruntime-directml optimum-onnx");
+                await EjecutarAsync(dml.exe, dml.args, raiz, 90, 98);
             }
 
             Progreso_(100, "Instalación completada");
@@ -533,16 +554,23 @@ public partial class MainWindow
             BarraInstalacion.Visibility = Visibility.Collapsed;
             Carga.Visibility = Visibility.Collapsed;
             RestaurarTrasInstalar();
-            Estado_($"Error al instalar ({ex.Message}). Comprueba tu conexión y " +
-                    "vuelve a abrir VozPluma, o ejecuta instalar.bat.", esError: true);
+            Estado_($"Error al instalar ({ex.Message}). Comprueba tu conexión a internet " +
+                    "y vuelve a abrir VozPluma para reintentarlo.", esError: true);
         }
     }
+
+    private string? _uv; // instalador rápido de paquetes; null = usar pip
+
+    /// Traduce una orden de pip ("install …") al instalador disponible.
+    private (string exe, string args) Pip(string venvPy, string orden) =>
+        _uv is not null ? (_uv, "pip " + orden) : (venvPy, "-m pip " + orden);
 
     private void RestaurarTrasInstalar()
     {
         _instalando = false;
         ModeloCombo.IsEnabled = IdiomaCombo.IsEnabled = true;
         BotonAjustes.IsEnabled = true;
+        BotonWidget.IsEnabled = true;
     }
 
     private void Progreso_(double pct, string texto)

@@ -24,6 +24,14 @@ public partial class WidgetWindow
         _principal = principal;
         _principal.MotorEvento += AlEventoDelMotor;
 
+        // el widget puede abrirse con el motor aún cargando: círculo girando
+        // hasta que llegue "ready" y se encienda el punto verde
+        if (_principal.MotorCargando)
+            AlEventoDelMotor("cargando", null);
+        else if (_principal.MotorListo)
+            AlEventoDelMotor("ready", null);
+        // si no, motor en reposo: punto gris y hablar lo despierta (estado del XAML)
+
         // WS_EX_NOACTIVATE: pulsar el widget no roba el foco a la app donde
         // estás escribiendo; WS_EX_TOOLWINDOW lo saca del Alt+Tab.
         SourceInitialized += (_, _) =>
@@ -53,7 +61,14 @@ public partial class WidgetWindow
     {
         switch (evento)
         {
+            case "cargando": // el motor está arrancando: aún no se puede dictar
+                Progreso.Visibility = Visibility.Visible;
+                Punto.Fill = Gris;
+                BotonHablar.IsEnabled = false;
+                BotonParar.IsEnabled = false;
+                break;
             case "ready":
+                Progreso.Visibility = Visibility.Collapsed;
                 Punto.Fill = Verde;
                 BotonHablar.IsEnabled = true;
                 BotonParar.IsEnabled = false;
