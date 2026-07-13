@@ -252,6 +252,11 @@ public partial class MainWindow
                     BotonWidget.IsEnabled = true;
                     Estado_($"Listo · {doc.RootElement.GetProperty("model").GetString()}" +
                             $" · {doc.RootElement.GetProperty("mic").GetString()}");
+                    if (_recPendiente)
+                    {
+                        _recPendiente = false;
+                        EnviarOrden("rec"); // grabación pedida mientras despertaba
+                    }
                     break;
                 case "listening":
                     Grabar(true); // el micrófono pasa a ser botón de parar
@@ -277,6 +282,7 @@ public partial class MainWindow
                     break;
                 case "error":
                     Grabar(false);
+                    _recPendiente = false; // que no arranque sola tras un fallo
                     Carga.Visibility = Visibility.Collapsed;
                     BotonMic.Visibility = Visibility.Visible;
                     Estado_("Error: " + doc.RootElement.GetProperty("message").GetString(),
@@ -317,13 +323,25 @@ public partial class MainWindow
         EnviarOrden(_grabando ? "stop" : "rec");
     }
 
+    // pulsaste grabar con el motor dormido o reiniciándose: se recuerda y la
+    // grabación empieza sola en cuanto llegue "ready" (una pulsación, no dos)
+    private bool _recPendiente;
+
     public void EnviarOrden(string orden)
     {
         _ultimaActividad = DateTime.Now;
         if (_engine is { HasExited: false })
             _engine.StandardInput.WriteLine(orden);
-        else if (orden == "rec" && !_reiniciando && !_instalando)
-            ReiniciarMotor(); // motor en reposo: se reactiva (dicta cuando cargue)
+        else if (_instalando)
+            return;
+        else if (orden == "rec")
+        {
+            _recPendiente = true;
+            if (!_reiniciando)
+                ReiniciarMotor(); // motor en reposo: se reactiva
+        }
+        else if (orden == "stop")
+            _recPendiente = false; // cancela la grabación que esperaba al motor
     }
 
     private void BotonAjustes_Click(object sender, RoutedEventArgs e)
@@ -576,7 +594,7 @@ public partial class MainWindow
     private void Progreso_(double pct, string texto)
     {
         BarraInstalacion.Value = pct;
-        Estado_(texto);
+        Estado_($"{(int)pct} % — {texto}");
     }
 
     /// Localiza un Python del sistema ("py" o "python"); tras instalarlo con
@@ -631,7 +649,9 @@ public partial class MainWindow
             if (desde >= 0 && BarraInstalacion.Value < hasta - 1)
                 BarraInstalacion.Value += (hasta - desde) / 250.0;
             var texto = linea.Trim();
-            Estado_(texto.Length > 90 ? texto[..90] + "…" : texto);
+            if (texto.Length > 80) texto = texto[..80] + "…";
+            // el mismo porcentaje de la barra, en texto, para verlo de un vistazo
+            Estado_($"{(int)BarraInstalacion.Value} % — {texto}");
         });
     }
 
