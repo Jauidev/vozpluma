@@ -8,6 +8,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>VozPluma</AssemblyName>
     <RootNamespace>VoiceAgent</RootNamespace>
+    <Version>1.2.0</Version>
     <!-- ThemeMode (tema Fluent Win11) está marcado como experimental en .NET 9 -->
     <NoWarn>WPF0001</NoWarn>
     <ApplicationIcon>icono.ico</ApplicationIcon>

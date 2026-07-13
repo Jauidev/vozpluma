@@ -40,6 +40,40 @@
                         <CheckBox x:Name="EspacioCheck"
                                   Content="Añadir un espacio tras cada frase dictada" />
                         <TextBlock Text="Permite encadenar frases en el modo widget sin que se peguen."
+                                   FontSize="11" TextWrapping="Wrap" Margin="0,2,0,14"
+                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+
+                        <TextBlock Text="Atajo de teclado global" FontSize="12" Margin="0,0,0,4"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        <ComboBox x:Name="AtajoCombo" Margin="0,0,0,4">
+                            <ComboBoxItem Content="Ctrl + Alt + D" Tag="ctrl+alt+d" />
+                            <ComboBoxItem Content="Ctrl + Alt + Espacio" Tag="ctrl+alt+space" />
+                            <ComboBoxItem Content="F9" Tag="f9" />
+                            <ComboBoxItem Content="Desactivado" Tag="" />
+                        </ComboBox>
+                        <TextBlock Text="Empieza o para el dictado desde cualquier aplicación, sin tocar la ventana ni el widget."
+                                   FontSize="11" TextWrapping="Wrap" Margin="0,2,0,0"
+                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- ================= INICIO ================= -->
+                <TextBlock Text="Inicio" FontSize="16" FontWeight="SemiBold"
+                           Margin="0,0,0,8" />
+                <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1" CornerRadius="8" Padding="16"
+                        Margin="0,0,0,20">
+                    <StackPanel>
+                        <CheckBox x:Name="ArranqueCheck"
+                                  Content="Iniciar VozPluma al encender el ordenador" />
+                        <TextBlock Text="Se añade al inicio de Windows (solo para tu usuario)."
+                                   FontSize="11" TextWrapping="Wrap" Margin="0,2,0,14"
+                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+
+                        <CheckBox x:Name="WidgetCheck"
+                                  Content="Abrir directamente en modo widget" />
+                        <TextBlock Text="Al arrancar, en cuanto el modelo esté listo se muestra el widget flotante en vez de la ventana."
                                    FontSize="11" TextWrapping="Wrap" Margin="0,2,0,0"
                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
                     </StackPanel>
@@ -53,9 +87,15 @@
                         BorderThickness="1" CornerRadius="8" Padding="16">
                     <StackPanel>
 
-                        <CheckBox x:Name="CpuCheck"
-                                  Content="Acelerar con la CPU (equipos sin gráfica NVIDIA)" />
-                        <TextBlock Text="Carga el modelo directamente en la CPU usando todos sus núcleos, sin intentar la gráfica. Actívalo si tu PC no tiene GPU NVIDIA o da errores al cargar."
+                        <TextBlock Text="Aceleración" FontSize="12" Margin="0,0,0,4"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        <ComboBox x:Name="AcelCombo" Margin="0,0,0,4">
+                            <ComboBoxItem Content="Automática (recomendado)" Tag="auto" />
+                            <ComboBoxItem Content="GPU NVIDIA (CUDA)" Tag="cuda" />
+                            <ComboBoxItem Content="GPU AMD o Intel (DirectML)" Tag="dml" />
+                            <ComboBoxItem Content="Solo CPU" Tag="cpu" />
+                        </ComboBox>
+                        <TextBlock Text="Automática prueba NVIDIA, luego AMD/Intel y por último la CPU. DirectML solo acelera Whisper y necesita instalar el soporte opcional (instalar.bat lo ofrece); Nemotron sin NVIDIA usa la CPU."
                                    FontSize="11" TextWrapping="Wrap" Margin="0,2,0,16"
                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
 
@@ -69,6 +109,18 @@
                                 TickFrequency="30" IsSnapToTickEnabled="True"
                                 ValueChanged="Slider_Changed" />
                         <TextBlock Text="Tope de seguridad: normalmente paras tú con el botón. La grabación no se corta al callarte."
+                                   FontSize="11" TextWrapping="Wrap" Margin="0,2,0,16"
+                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+
+                        <TextBlock Text="Reposo tras inactividad" FontSize="12" Margin="0,0,0,4"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        <ComboBox x:Name="ReposoCombo" Margin="0,0,0,4">
+                            <ComboBoxItem Content="A los 5 minutos" Tag="5" />
+                            <ComboBoxItem Content="A los 10 minutos" Tag="10" />
+                            <ComboBoxItem Content="A los 30 minutos" Tag="30" />
+                            <ComboBoxItem Content="Nunca (siempre en memoria)" Tag="0" />
+                        </ComboBox>
+                        <TextBlock Text="El modelo ocupa varios GB de memoria. En reposo se libera y se vuelve a cargar al pulsar el micrófono o el atajo."
                                    FontSize="11" TextWrapping="Wrap" Margin="0,2,0,0"
                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
 

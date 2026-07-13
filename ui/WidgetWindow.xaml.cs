@@ -76,6 +76,12 @@ public partial class WidgetWindow
                 BotonHablar.IsEnabled = true;
                 BotonParar.IsEnabled = false;
                 break;
+            case "reposo": // motor parado por inactividad; hablar lo despierta
+                Progreso.Visibility = Visibility.Collapsed;
+                Punto.Fill = Gris;
+                BotonHablar.IsEnabled = true;
+                BotonParar.IsEnabled = false;
+                break;
             case "error":
                 Progreso.Visibility = Visibility.Collapsed;
                 Punto.Fill = Gris;

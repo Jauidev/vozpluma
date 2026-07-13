@@ -80,9 +80,14 @@
                 <StackPanel Grid.Column="0">
                     <TextBlock Text="Modelo" FontSize="12" Margin="4,0,0,4"
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-                    <ComboBox x:Name="ModeloCombo" SelectionChanged="Selector_Changed">
-                        <ComboBoxItem Content="Whisper turbo (int8)" IsSelected="True" />
-                        <ComboBoxItem Content="Nemotron 3.5 (0.6B)" />
+                    <ComboBox x:Name="ModeloCombo" SelectionChanged="Selector_Changed"
+                              ToolTip="Cuanto más pequeño el Whisper, más rápido pero menos preciso. Turbo es el recomendado si tu equipo puede con él.">
+                        <ComboBoxItem Content="Whisper turbo" Tag="large-v3-turbo" IsSelected="True" />
+                        <ComboBoxItem Content="Whisper medium" Tag="medium" />
+                        <ComboBoxItem Content="Whisper small" Tag="small" />
+                        <ComboBoxItem Content="Whisper base" Tag="base" />
+                        <ComboBoxItem Content="Whisper tiny" Tag="tiny" />
+                        <ComboBoxItem Content="Nemotron 3.5 (0.6B)" Tag="nemotron" />
                     </ComboBox>
                 </StackPanel>
 
@@ -107,6 +112,9 @@
 
             <!-- Zona inferior fija: estado + micrófono -->
             <StackPanel Grid.Row="3" Margin="0,10,0,0">
+                <!-- solo visible durante la instalación del primer arranque -->
+                <ProgressBar x:Name="BarraInstalacion" Height="6" Margin="24,0,24,8"
+                             Minimum="0" Maximum="100" Visibility="Collapsed" />
                 <TextBlock x:Name="Estado" Text="Iniciando…"
                            FontSize="12" TextWrapping="Wrap" TextAlignment="Center"
                            HorizontalAlignment="Center" Margin="0,0,0,10"

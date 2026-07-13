@@ -23,7 +23,11 @@ public partial class SettingsWindow
 
         var a = Ajustes.Actual;
         EspacioCheck.IsChecked = a.EspacioFinal;
-        CpuCheck.IsChecked = a.ForzarCpu;
+        ArranqueCheck.IsChecked = a.IniciarConWindows;
+        WidgetCheck.IsChecked = a.AbrirEnWidget;
+        SeleccionarPorTag(AtajoCombo, a.Atajo);
+        SeleccionarPorTag(AcelCombo, a.Acelerador);
+        SeleccionarPorTag(ReposoCombo, a.ReposoMin.ToString());
         MaxSegSlider.Value = a.MaxSeg;
         ActualizarEtiquetas();
 
@@ -69,6 +73,12 @@ public partial class SettingsWindow
         }
     }
 
+    private static void SeleccionarPorTag(ComboBox combo, string tag) =>
+        combo.SelectedItem =
+            combo.Items.Cast<ComboBoxItem>()
+                .FirstOrDefault(i => (string)i.Tag == tag)
+            ?? combo.Items[0];
+
     private void Slider_Changed(object sender,
         RoutedPropertyChangedEventArgs<double> e) => ActualizarEtiquetas();
 
@@ -85,13 +95,37 @@ public partial class SettingsWindow
         {
             MicIndex = (int)(((ComboBoxItem?)MicCombo.SelectedItem)?.Tag ?? -1),
             EspacioFinal = EspacioCheck.IsChecked == true,
-            ForzarCpu = CpuCheck.IsChecked == true,
+            IniciarConWindows = ArranqueCheck.IsChecked == true,
+            AbrirEnWidget = WidgetCheck.IsChecked == true,
+            Atajo = (string)((ComboBoxItem)AtajoCombo.SelectedItem).Tag,
+            Acelerador = (string)((ComboBoxItem)AcelCombo.SelectedItem).Tag,
+            ReposoMin = int.Parse((string)((ComboBoxItem)ReposoCombo.SelectedItem).Tag),
             MaxSeg = (int)MaxSegSlider.Value,
             // conserva lo elegido en la ventana principal
             Idioma = Ajustes.Actual.Idioma,
             UsarWhisper = Ajustes.Actual.UsarWhisper,
+            ModeloWhisper = Ajustes.Actual.ModeloWhisper,
         }.Guardar();
+        AplicarArranqueConWindows(ArranqueCheck.IsChecked == true);
         DialogResult = true;
+    }
+
+    /// Alta o baja en el inicio de Windows (clave Run de HKCU, sin permisos de admin).
+    private static void AplicarArranqueConWindows(bool activar)
+    {
+        try
+        {
+            using var clave = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(
+                @"Software\Microsoft\Windows\CurrentVersion\Run", writable: true);
+            if (activar)
+                clave?.SetValue("VozPluma", $"\"{Environment.ProcessPath}\"");
+            else
+                clave?.DeleteValue("VozPluma", throwOnMissingValue: false);
+        }
+        catch
+        {
+            // sin acceso al registro: la app funciona igual, solo no se autoarranca
+        }
     }
 
     private void Cancelar_Click(object sender, RoutedEventArgs e) =>
