@@ -5,10 +5,10 @@ Dictado por voz **100% local** para Windows: habla y el texto se escribe solo en
 ## Características
 
 - **Transcripción local con IA**: Whisper en cinco tamaños — de `tiny` (el más rápido) a `large-v3-turbo` (máxima calidad) — o NVIDIA Nemotron 3.5 ASR, se cambia desde la interfaz
-- **Modo widget**: pastilla flotante que escribe lo que dictas directamente donde esté el cursor, en cualquier app, sin robar el foco
+- **Modo widget**: pastilla flotante que escribe lo que dictas directamente donde esté el cursor, en cualquier app, sin robar el foco; se abre al instante — un círculo de carga gira mientras el motor arranca y el punto verde avisa de que ya puedes dictar
 - **Tú controlas la grabación**: pulsa para empezar, habla a tu ritmo — con las pausas que quieras — y pulsa otra vez para parar y transcribir; sin cortes automáticos por silencio
 - **7 idiomas**: español, inglés, francés, alemán, italiano, portugués y árabe
-- **Instalación sin pasos**: abres el exe y el primer arranque instala Python y todas las dependencias por sí solo, con barra de progreso — sin scripts que ejecutar
+- **Instalación sin pasos y rápida**: abres el exe y el primer arranque instala Python y todas las dependencias por sí solo, con barra de progreso — sin scripts que ejecutar; desde la v1.2.1 usa [uv](https://github.com/astral-sh/uv) y descarga los paquetes en paralelo, en una fracción del tiempo que tardaba pip
 - **Atajo de teclado global** (Ctrl+Alt+D por defecto): empieza o para el dictado desde cualquier aplicación, incluso con VozPluma oculto
 - **Interfaz Windows 11** (WPF + tema Fluent con Mica) con ajustes de **General**, **Inicio** (arrancar con Windows, abrir en modo widget) y **Rendimiento**
 - **Funciona en cualquier PC y con cualquier gráfica**: NVIDIA (CUDA), **AMD e Intel (DirectML)** o solo CPU — el modo *automático* elige la mejor disponible; el modelo se calienta al cargar para que hasta la primera transcripción sea instantánea
@@ -18,7 +18,7 @@ Dictado por voz **100% local** para Windows: habla y el texto se escribe solo en
 
 ## Instalación rápida (usuarios)
 
-1. Descarga `VozPluma-v1.2.0.zip` desde [Releases](https://github.com/Jauidev/vozpluma/releases) y descomprímelo
+1. Descarga `VozPluma-v1.2.1.zip` desde [Releases](https://github.com/Jauidev/vozpluma/releases) y descomprímelo
 2. Abre `VozPluma.exe` — **y ya está**. La primera vez instala Python y todas las dependencias por sí sola, con una barra de progreso, y después descarga el modelo de voz (~1.5 GB). Todo esto ocurre una sola vez; los siguientes arranques van directos a la app.
 
 El paquete descomprimido queda así:
@@ -26,7 +26,6 @@ El paquete descomprimido queda así:
 ```
 VozPluma\
 ├── VozPluma.exe        ← la aplicación (autocontenida, no necesita .NET)
-├── instalar.bat        ← opcional: instalador manual, solo si falla el automático
 ├── LEEME.txt           ← instrucciones y solución de problemas
 ├── engine.py, talk.py, transcribe.py
 └── requirements.txt
@@ -39,7 +38,8 @@ VozPluma\
 ```bat
 git clone https://github.com/Jauidev/vozpluma.git
 cd vozpluma
-instalar.bat
+:: el entorno de Python lo crea la propia app al abrirla por primera vez;
+:: a mano sería: python -m venv .venv && .venv\Scripts\pip install torch torchaudio -r requirements.txt
 :: la interfaz necesita el SDK de .NET 9 para compilar:
 dotnet build ui\VoiceAgent.csproj -c Release
 ```

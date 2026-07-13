@@ -38,7 +38,7 @@ There is no test suite; changes are verified by driving the engine protocol (see
 ### Release pipeline (run after every user-visible change)
 
 1. Publish single-file exe: `"C:\Program Files\dotnet\dotnet.exe" publish ui\VoiceAgent.csproj -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true -o dist\pub`
-2. Move `dist\pub\VozPluma.exe` into the staging folder (a clean copy of the package: exe + engine.py/talk.py/transcribe.py + instalar.bat/desinstalar.bat + requirements.txt + LEEME.txt). **Never zip `dist\VozPluma` directly** — the user ran instalar.bat inside it, so it contains a multi-GB `.venv`.
+2. Move `dist\pub\VozPluma.exe` into the staging folder (a clean copy of the package: exe + engine.py/talk.py/transcribe.py + requirements.txt + LEEME.txt; the .bat installers were removed in v1.2.1 — install/uninstall live inside the exe). **Never zip `dist\VozPluma` directly** — it contains a multi-GB `.venv` from local use.
 3. Zip with **WinRAR** (user's explicit preference; Compress-Archive takes minutes, WinRAR seconds): `& "C:\Program Files\WinRAR\WinRAR.exe" a -afzip -ibck -ep1 <zip> <stagingFolder>` (via `Start-Process -Wait`).
 4. Replace the GitHub release asset (release id 349843137) via the REST API; the auth token comes from Git Credential Manager: `printf "protocol=https\nhost=github.com\n" | git credential fill` (gh CLI is not installed). Delete the old asset, then POST the zip to uploads.github.com.
 5. Commit (anonymous author, see above) and `git push`.
